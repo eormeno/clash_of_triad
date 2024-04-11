@@ -2,8 +2,8 @@
 
 return [
 
-    'welcome_title' => 'Bienvenido a la sala de juegos!',
-    'welcome_subtitle' => 'Aquí puedes jugar a los juegos que quieras, cuando quieras.',
+    'title' => 'Bienvenido a la sala de juegos!',
+    'subtitle' => 'Aquí puedes jugar a los juegos que quieras, cuando quieras.',
     'documentation' => 'Documentación',
     'documentation_text' => 'Aquí puedes encontrar la documentación de los juegos y las instrucciones de uso.',
     'videos' => 'Videos',
