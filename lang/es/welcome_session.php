@@ -12,4 +12,5 @@ return [
     'credits_text' => 'Aquí puedes encontrar los créditos de los juegos y de la plataforma.',
     'games' => 'Juegos',
     'games_text' => 'Aquí puedes encontrar los juegos disponibles en la plataforma.',
+    'play_now' => '¡Quero Jugar Ya!',
 ];
