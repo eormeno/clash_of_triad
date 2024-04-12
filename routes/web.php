@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Contador;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -19,5 +20,7 @@ Route::middleware([
     Route::get('/play', function () {
         return view('play.board');
     })->name('play');
+
+    Route::get('/contador', Contador::class);
 
 });
