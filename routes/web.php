@@ -21,6 +21,4 @@ Route::middleware([
         return view('play.board');
     })->name('play');
 
-    Route::get('/contador', Contador::class);
-
 });

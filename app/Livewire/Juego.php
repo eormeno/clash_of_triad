@@ -4,23 +4,28 @@ namespace App\Livewire;
 
 use Livewire\Component;
 
-class Contador extends Component
+class Juego extends Component
 {
 
     public $count = 1;
 
-    public function increment()
+    public function rock()
     {
         $this->count++;
     }
 
-    public function decrement()
+    public function paper()
     {
         $this->count--;
     }
 
+    public function scissors()
+    {
+        $this->count = 1;
+    }
+
     public function render()
     {
-        return view('livewire.contador');
+        return view('livewire.juego');
     }
 }
