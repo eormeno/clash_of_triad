@@ -8,11 +8,12 @@ class Juego extends Component
 {
 
     private $estadosDeJuego = [
-        'Buscando oponente',
-        'Elige tu jugada',
-        'Esperando a tu oponente',
-        'Resultado de la partida',
+        ['Buscando oponente', 15],
+        ['Elige tu jugada', 3],
+        ['Resultado de la partida', 2],
     ];
+
+    public $temporizador = 0;
 
     public $indiceEstadoActual = 0;
 
@@ -25,17 +26,27 @@ class Juego extends Component
     public function mount()
     {
         $this->jugador = auth()->user()->name;
-        $this->updateState();
+        $this->indiceEstadoActual = -1;
+        $this->nextState();
     }
 
     public function updateState()
     {
+        $this->temporizador++;
+        if ($this->temporizador >= $this->estadoDeJuego[1]) {
+            $this->temporizador = 0;
+            $this->nextState();
+        }
+    }
+
+    public function nextState()
+    {
+        $this->indiceEstadoActual++;
         $countStates = count($this->estadosDeJuego);
         if ($this->indiceEstadoActual > $countStates - 1) {
             $this->indiceEstadoActual = 0;
         }
         $this->estadoDeJuego = $this->estadosDeJuego[$this->indiceEstadoActual];
-        $this->indiceEstadoActual++;
     }
 
     public function rock()
