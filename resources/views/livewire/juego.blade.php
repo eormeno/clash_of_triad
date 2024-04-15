@@ -15,7 +15,7 @@
     <!-- Show a message that says 'Waiting for the other player' -->
     <div x-show="$wire.indiceEstadoActual === 0" class="mt-6 align-middle">
         <h1 class="mt-8 text-2xl font-medium text-gray-900 dark:text-white">
-            {{ __('Esperando al otro jugador') }} : {{ $estadoDeJuego[1] - $temporizador }}
+            {{ __('Esperando al otro jugador') }} : {{ $remainingTime }}
         </h1>
     </div>
 
