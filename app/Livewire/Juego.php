@@ -8,15 +8,15 @@ class Juego extends Component
 {
 
     private $estadosDeJuego = [
-        'inicio'    => ['Inicio', 0.0, 'buscar'],
-        'buscar'    => ['Buscando oponente', 15.0, 'oponente'],
-        'oponente'  => ['Oponente encontrado', 4.0, 'ronda'],
-        'ronda'     => ['Ronda', 3.0, 'juega'],
-        'juega'     => ['Haz tu jugada', 3.0, 'calcular'],
-        'calcular'  => ['Calculando resultado', 2.0, 'fin_ronda'],
+        'inicio' => ['Inicio', 0.0, 'buscando_oponente'],
+        'buscando_oponente' => ['Buscando oponente', 15.0, 'oponente'],
+        'oponente' => ['Oponente encontrado', 4.0, 'ronda'],
+        'ronda' => ['Ronda', 3.0, 'juega'],
+        'juega' => ['Haz tu jugada', 3.0, 'calcular'],
+        'calcular' => ['Calculando resultado', 2.0, 'fin_ronda'],
         'fin_ronda' => ['Resultado de la ronda', 2.0, 'ronda', 'fin_juego'],
         'fin_juego' => ['Fin del juego', 0.0, 'fin'],
-        'fin'       => ['Fin', 0.0, 'inicio'],
+        'fin' => ['Fin', 0.0, 'inicio'],
     ];
 
     public float $temporizador = 0.0;
@@ -57,8 +57,8 @@ class Juego extends Component
 
     public function nextState()
     {
-        $siguienteEstado = $this->estadoDeJuego[2];
-        $this->estadoDeJuego = $this->estadosDeJuego[$siguienteEstado];
+        $this->estadoActual = $this->estadoDeJuego[2];
+        $this->estadoDeJuego = $this->estadosDeJuego[$this->estadoActual];
     }
 
     public function rock()
