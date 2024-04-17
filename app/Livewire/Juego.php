@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\FSM\FSM;
 use Livewire\Component;
 
 class Juego extends Component
@@ -32,6 +33,32 @@ class Juego extends Component
     public $choice = -1;
 
     public int $ronda = 0;
+
+    private FSM $fsm;
+
+    public function __construct()
+    {
+        $this->fsm = FSM::crear()
+            ->crearEstado('buscando_oponente', 15.0)
+            ->crearEstado('oponente_encontrado', 4.0)
+            ->crearEstado('mostrar_numero_ronda', 3.0)
+            ->crearEstado('pedir_jugada', 3.0)
+            ->crearEstado('calcular')
+            ->crearEstado('mostrar_resultado_ronda', 2.0)
+            ->crearEstado('incrementar_ronda')
+            ->crearEstado('mostrar_resultado_juego', 2.0)
+            ->siguiente('inicio', 'buscando_oponente')
+            ->siguiente('buscando_oponente', 'oponente_encontrado')
+            ->siguiente('oponente_encontrado', 'mostrar_numero_ronda')
+            ->siguiente('mostrar_numero_ronda', 'pedir_jugada')
+            ->siguiente('pedir_jugada', 'calcular')
+            ->siguiente('calcular', 'mostrar_resultado_ronda')
+            ->siguiente('mostrar_resultado_ronda', 'incrementar_ronda', 'mostrar_resultado_juego')
+            ->siguiente('incrementar_ronda', 'mostrar_numero_ronda')
+            ->siguiente('mostrar_resultado_juego', 'fin');
+
+        $this->estadoDeJuego = $this->estadosDeJuego['inicio'];
+    }
 
     public function mount()
     {

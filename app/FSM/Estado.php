@@ -10,36 +10,14 @@ class Estado
     private Estado $siguiente;
     private Estado $alternativo;
 
-    private function __construct(string $nombre, float $duración = 0, string $descripcion = '')
+    public function __construct(string $nombre, float $duración = 0, string $descripcion = '')
     {
         $this->nombre = $nombre;
         $this->duración = $duración;
         $this->descripcion = $descripcion;
     }
 
-    public static function fabricarInicio(): Estado
-    {
-        return new Estado('inicio');
-    }
-
-    public static function fabricarFin(): Estado
-    {
-        return new Estado('fin');
-    }
-
-    public function fabricarSiguiente(string $nombre, float $duración = 0, string $descripcion = '') : Estado
-    {
-        $this->siguiente = new Estado($nombre, $duración, $descripcion);
-        return $this->siguiente;
-    }
-
-    public function fabricarAlternativo(string $nombre, float $duración = 0, string $descripcion = '') : Estado
-    {
-        $this->alternativo = new Estado($nombre, $duración, $descripcion);
-        return $this->alternativo;
-    }
-
-    public function siguiente(string $siguiente): Estado
+    public function siguiente(Estado $siguiente): Estado
     {
         $this->siguiente = $siguiente;
         return $this;
