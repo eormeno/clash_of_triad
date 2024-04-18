@@ -6,28 +6,41 @@ class Estado
 {
     private FSM $fsm;
     private string $nombre;
-    private float $duración;
+    private float $duración = 0;
+    private bool $esInicio = false;
+    private bool $esFin = false;
+    private bool $esDecisión = false;
+    private bool $esInteractivo = false;
     private array $siguientes = [];
+    private float $remainingTime = 0;
+    private $alEntrar = null;
+    private $durante = null;
+    private $alSalir = null;
 
-    public function __construct(FSM $fsm, string $nombre, float $duración = 0)
+    public function __construct(FSM $fsm, string $nombre)
     {
         $this->fsm = $fsm;
         $this->nombre = $nombre;
-        $this->duración = $duración;
     }
 
-    public function siguiente(string $nombre, float $duración = 0): Estado
+    public function siguiente(string $nombre): Estado
     {
-        $siguiente = $this->fsm->crearOBuscar($nombre, $duración);
-        $this->siguientes[$nombre] = $siguiente;
+        $siguiente = $this->fsm->estado($nombre);
+        $this->siguientes[] = $siguiente;
         return $siguiente;
     }
 
     public function decisión(string $nombre): Estado
     {
-        $siguiente = $this->fsm->crearOBuscar($nombre);
-        $this->siguientes[$nombre] = $siguiente;
-        return $siguiente;
+        $decisión = $this->fsm->estado($nombre);
+        $decisión->esDecisión = true;
+        $this->siguientes[] = $decisión;
+        return $decisión;
+    }
+
+    public function fin(): void
+    {
+        $this->siguiente('fin');
     }
 
     public function siguientes(array $siguientes): Estado
@@ -38,18 +51,80 @@ class Estado
         return $this;
     }
 
-    public function crearOBuscar(string $nombre, float $duración = 0): Estado
+    public function duración(float $duración): Estado
     {
-        return $this->fsm->crearOBuscar($nombre, $duración);
+        $this->duración = $duración;
+        return $this;
     }
 
-    public function getNombre(): string
+    public function interactivo(): Estado
     {
-        return $this->nombre;
+        $this->esInteractivo = true;
+        return $this;
     }
 
-    public function getDuración(): float
+    public function alEntrar(callable $alEntrar): Estado
     {
-        return $this->duración;
+        $this->alEntrar = $alEntrar;
+        return $this;
+    }
+
+    public function alSalir(callable $alSalir): Estado
+    {
+        $this->alSalir = $alSalir;
+        return $this;
+    }
+
+    public function durante(callable $durante): Estado
+    {
+        $this->durante = $durante;
+        return $this;
+    }
+
+    public function estado(string $nombre): Estado
+    {
+        return $this->fsm->estado($nombre);
+    }
+
+    public function entrar(): void
+    {
+        $this->remainingTime = $this->duración;
+        if ($this->alEntrar) {
+            call_user_func($this->alEntrar);
+        }
+    }
+
+    public function actualizar(float $deltaTime): ?Estado
+    {
+        if ($this->esFin) {
+            return null;
+        }
+
+        if ($this->esInicio) {
+            return $this->siguientes[0];
+        }
+
+        if ($this->esDecisión && !$this->durante) {
+            throw new \Exception('La decisión ' . $this->nombre . ' requiere un método con su lógica.');
+        }
+
+        if ($this->durante) {
+            return call_user_func($this->durante, $deltaTime);
+        }
+
+        if ($this->duración > 0) {
+            $this->remainingTime -= $deltaTime;
+            if ($this->remainingTime <= 0) {
+                return $this->siguientes[0];
+            }
+        }
+        return $this;
+    }
+
+    public function salir(): void
+    {
+        if ($this->alSalir) {
+            call_user_func($this->alSalir);
+        }
     }
 }

@@ -40,26 +40,26 @@ class Juego extends Component
     {
         $this->fsm = FSM::crear();
         $this->fsm
-            ->crearOBuscar('inicio')
-            ->decisión('existe_oponente')
+            ->estadoInicial()
+            ->decisión('¿Existe oponente?')
             ->siguientes([
-                'buscando_oponente',
-                'oponente_encontrado'
+                'buscando oponente',
+                'oponente encontrado'
             ])
-            ->crearOBuscar('buscando_oponente', 15.0)
-            ->siguiente('oponente_encontrado', 4.0)
-            ->siguiente('mostrar_numero_ronda', 3.0)
-            ->siguiente('pedir_jugada', 3.0)
+            ->estado('buscando oponente')->duración(15.0)
+            ->siguiente('oponente encontrado')->duración(4.0)
+            ->siguiente('mostrar número ronda')->duración(3.0)
+            ->siguiente('pedir jugada')->interactivo()
             ->siguiente('calcular')
-            ->siguiente('mostrar_resultado_ronda', 2.0)
-            ->siguiente('incrementar_ronda')
-            ->decisión('es_fin_de_juego')
+            ->siguiente('mostrar resultado ronda')->duración(2.0)
+            ->siguiente('incrementar ronda')
+            ->decisión('¿Es fin de juego?')
             ->siguientes([
-                'mostrar_resultado_juego',
-                'mostrar_numero_ronda'
+                'mostrar resultado juego',
+                'mostrar número ronda'
             ])
-            ->crearOBuscar('mostrar_resultado_juego', 4.0)
-            ->siguiente('fin');
+            ->estado('mostrar resultado juego')->duración(4.0)
+            ->fin();
 
         $this->estadoDeJuego = $this->estadosDeJuego['inicio'];
     }

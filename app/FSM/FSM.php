@@ -6,33 +6,49 @@ class FSM {
 
     private $estados = [];
 
-    protected Estado $inicio;
-
-    protected Estado $fin;
-
     protected Estado $estadoActual;
 
     private float $temporizador = 0;
 
     public static function crear(): FSM {
         $fsm = new FSM();
-        $fsm->inicio= $fsm->crearOBuscar('inicio');
-        $fsm->fin = $fsm->crearOBuscar('fin');
-        $fsm->estadoActual = $fsm->inicio;
+        $fsm->resetTime();
         return $fsm;
     }
 
-    public function crearOBuscar(string $nombre, float $duración = 0): Estado {
+    public function estadoInicial(): Estado {
+        $estado = $this->estado('inicio');
+        $estado->esInicio = true;
+        $this->estadoActual = $estado;
+        return $estado;
+    }
+
+    public function estadoFinal(): Estado
+    {
+        $fin = $this->estado('fin');
+        $fin->esFin = true;
+        return $fin;
+    }
+
+    public function estado(string $nombre): Estado {
         if (array_key_exists($nombre, $this->estados)) {
-            $estado_actual = $this->estados[$nombre];
-            if ($duración > 0) {
-                $estado_actual->duración = $duración;
-            }
             return $this->estados[$nombre];
         }
-        $estado = new Estado($this, $nombre, $duración);
+        $estado = new Estado($this, $nombre);
         $this->estados[$nombre] = $estado;
         return $estado;
+    }
+
+    public function actualizar(): Estado {
+        $estado = $this->estadoActual;
+        $nuevoEstado = $estado->actualizar($this->getDeltaTime());
+        if ($nuevoEstado !== null && $nuevoEstado !== $this->estadoActual) {
+            $estado->salir();
+            $this->estadoActual = $nuevoEstado;
+            $this->estadoActual->entrar();
+        }
+        $this->registerTime();
+        return $this->estadoActual;
     }
 
     public function registerTime() {
