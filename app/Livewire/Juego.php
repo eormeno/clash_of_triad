@@ -38,24 +38,28 @@ class Juego extends Component
 
     public function __construct()
     {
-        $this->fsm = FSM::crear()
-            ->crearEstado('buscando_oponente', 15.0)
-            ->crearEstado('oponente_encontrado', 4.0)
-            ->crearEstado('mostrar_numero_ronda', 3.0)
-            ->crearEstado('pedir_jugada', 3.0)
-            ->crearEstado('calcular')
-            ->crearEstado('mostrar_resultado_ronda', 2.0)
-            ->crearEstado('incrementar_ronda')
-            ->crearEstado('mostrar_resultado_juego', 2.0)
-            ->siguiente('inicio', 'buscando_oponente')
-            ->siguiente('buscando_oponente', 'oponente_encontrado')
-            ->siguiente('oponente_encontrado', 'mostrar_numero_ronda')
-            ->siguiente('mostrar_numero_ronda', 'pedir_jugada')
-            ->siguiente('pedir_jugada', 'calcular')
-            ->siguiente('calcular', 'mostrar_resultado_ronda')
-            ->siguiente('mostrar_resultado_ronda', 'incrementar_ronda', 'mostrar_resultado_juego')
-            ->siguiente('incrementar_ronda', 'mostrar_numero_ronda')
-            ->siguiente('mostrar_resultado_juego', 'fin');
+        $this->fsm = FSM::crear();
+        $this->fsm
+            ->crearOBuscar('inicio')
+            ->decisión('existe_oponente')
+            ->siguientes([
+                'buscando_oponente',
+                'oponente_encontrado'
+            ])
+            ->crearOBuscar('buscando_oponente', 15.0)
+            ->siguiente('oponente_encontrado', 4.0)
+            ->siguiente('mostrar_numero_ronda', 3.0)
+            ->siguiente('pedir_jugada', 3.0)
+            ->siguiente('calcular')
+            ->siguiente('mostrar_resultado_ronda', 2.0)
+            ->siguiente('incrementar_ronda')
+            ->decisión('es_fin_de_juego')
+            ->siguientes([
+                'mostrar_resultado_juego',
+                'mostrar_numero_ronda'
+            ])
+            ->crearOBuscar('mostrar_resultado_juego', 4.0)
+            ->siguiente('fin');
 
         $this->estadoDeJuego = $this->estadosDeJuego['inicio'];
     }

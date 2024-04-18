@@ -4,29 +4,43 @@ namespace App\FSM;
 
 class Estado
 {
+    private FSM $fsm;
     private string $nombre;
     private float $duración;
-    private string $descripcion;
-    private Estado $siguiente;
-    private Estado $alternativo;
+    private array $siguientes = [];
 
-    public function __construct(string $nombre, float $duración = 0, string $descripcion = '')
+    public function __construct(FSM $fsm, string $nombre, float $duración = 0)
     {
+        $this->fsm = $fsm;
         $this->nombre = $nombre;
         $this->duración = $duración;
-        $this->descripcion = $descripcion;
     }
 
-    public function siguiente(Estado $siguiente): Estado
+    public function siguiente(string $nombre, float $duración = 0): Estado
     {
-        $this->siguiente = $siguiente;
+        $siguiente = $this->fsm->crearOBuscar($nombre, $duración);
+        $this->siguientes[$nombre] = $siguiente;
+        return $siguiente;
+    }
+
+    public function decisión(string $nombre): Estado
+    {
+        $siguiente = $this->fsm->crearOBuscar($nombre);
+        $this->siguientes[$nombre] = $siguiente;
+        return $siguiente;
+    }
+
+    public function siguientes(array $siguientes): Estado
+    {
+        foreach ($siguientes as $nombre) {
+            $this->siguiente($nombre);
+        }
         return $this;
     }
 
-    public function alternativo(Estado $alternativo): Estado
+    public function crearOBuscar(string $nombre, float $duración = 0): Estado
     {
-        $this->alternativo = $alternativo;
-        return $this;
+        return $this->fsm->crearOBuscar($nombre, $duración);
     }
 
     public function getNombre(): string
@@ -37,20 +51,5 @@ class Estado
     public function getDuración(): float
     {
         return $this->duración;
-    }
-
-    public function getDescripcion(): string
-    {
-        return $this->descripcion;
-    }
-
-    public function getSiguiente(): Estado
-    {
-        return $this->siguiente;
-    }
-
-    public function getAlternativo(): Estado
-    {
-        return $this->alternativo;
     }
 }

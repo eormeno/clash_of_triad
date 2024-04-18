@@ -16,32 +16,23 @@ class FSM {
 
     public static function crear(): FSM {
         $fsm = new FSM();
-        $fsm->inicio= new Estado('inicio');
-        $fsm->estados[$fsm->inicio->getNombre()] = $fsm->inicio;
-        $fsm->fin = new Estado('fin');
-        $fsm->estados[$fsm->fin->getNombre()] = $fsm->fin;
+        $fsm->inicio= $fsm->crearOBuscar('inicio');
+        $fsm->fin = $fsm->crearOBuscar('fin');
         $fsm->estadoActual = $fsm->inicio;
         return $fsm;
     }
 
-    public function siguiente(string $origen, string $destino, string $alternativo = null): FSM {
-        $origen = $this->estados[$origen];
-        $destino = $this->estados[$destino];
-        $origen->siguiente($destino);
-        if ($alternativo) {
-            $alternativo = $this->estados[$alternativo];
-            $origen->alternativo($alternativo);
-        }
-        return $this;
-    }
-
-    public function crearEstado(string $nombre, float $duración = 0): FSM {
+    public function crearOBuscar(string $nombre, float $duración = 0): Estado {
         if (array_key_exists($nombre, $this->estados)) {
-            throw new \Exception("El estado $nombre ya existe");
+            $estado_actual = $this->estados[$nombre];
+            if ($duración > 0) {
+                $estado_actual->duración = $duración;
+            }
+            return $this->estados[$nombre];
         }
-        $estado = new Estado($nombre, $duración);
+        $estado = new Estado($this, $nombre, $duración);
         $this->estados[$nombre] = $estado;
-        return $this;
+        return $estado;
     }
 
     public function registerTime() {
