@@ -12,7 +12,7 @@ class Estado
     private bool $esDecisión = false;
     private bool $esInteractivo = false;
     private array $siguientes = [];
-    private float $remainingTime = 0;
+    private float $restante = 0;
     private $alEntrar = null;
     private $durante = null;
     private $alSalir = null;
@@ -63,6 +63,28 @@ class Estado
         return $this;
     }
 
+    public function esInicial(): Estado
+    {
+        $this->esInicio = true;
+        return $this;
+    }
+
+    public function esFinal(): Estado
+    {
+        $this->esFin = true;
+        return $this;
+    }
+
+    public function getNombre(): string
+    {
+        return $this->nombre;
+    }
+
+    public function getRestante(): float
+    {
+        return $this->restante;
+    }
+
     public function alEntrar(callable $alEntrar): Estado
     {
         $this->alEntrar = $alEntrar;
@@ -88,7 +110,7 @@ class Estado
 
     public function entrar(): void
     {
-        $this->remainingTime = $this->duración;
+        $this->restante = $this->duración;
         if ($this->alEntrar) {
             call_user_func($this->alEntrar);
         }
@@ -105,7 +127,7 @@ class Estado
         }
 
         if ($this->esDecisión && !$this->durante) {
-            throw new \Exception('La decisión ' . $this->nombre . ' requiere un método con su lógica.');
+            throw new \Exception('La decisión "' . $this->nombre . '" requiere un método para su lógica.');
         }
 
         if ($this->durante) {
@@ -114,7 +136,7 @@ class Estado
 
         if ($this->duración > 0) {
             $this->remainingTime -= $deltaTime;
-            if ($this->remainingTime <= 0) {
+            if ($this->restante <= 0) {
                 return $this->siguientes[0];
             }
         }

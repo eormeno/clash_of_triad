@@ -17,16 +17,14 @@ class FSM {
     }
 
     public function estadoInicial(): Estado {
-        $estado = $this->estado('inicio');
-        $estado->esInicio = true;
+        $estado = $this->estado('inicio')->esInicial();
         $this->estadoActual = $estado;
         return $estado;
     }
 
     public function estadoFinal(): Estado
     {
-        $fin = $this->estado('fin');
-        $fin->esFin = true;
+        $fin = $this->estado('fin')->esFinal();
         return $fin;
     }
 
