@@ -27,20 +27,22 @@ class Juego extends Component
                 'buscando oponente',
                 'oponente encontrado'
             ])
-            ->estado('buscando oponente')->duración(15.0)
-            ->siguiente('oponente encontrado')->duración(4.0)
-            ->siguiente('mostrar número ronda')->duración(3.0)
-            ->siguiente('pedir jugada')->interactivo()
+            ->estado('buscando oponente')->setDuración(15.0)
+            ->siguiente('oponente encontrado')->setDuración(4.0)
+            ->siguiente('mostrar número ronda')->setDuración(3.0)
+            ->siguiente('pedir jugada')->setAsInteractive()
             ->siguiente('calcular')
-            ->siguiente('mostrar resultado ronda')->duración(2.0)
+            ->siguiente('mostrar resultado ronda')->setDuración(2.0)
             ->siguiente('incrementar ronda')
             ->decisión('¿Es fin de juego?')
             ->siguientes([
                 'mostrar resultado juego',
                 'mostrar número ronda'
             ])
-            ->estado('mostrar resultado juego')->duración(4.0)
+            ->estado('mostrar resultado juego')->setDuración(4.0)
             ->fin();
+
+        $this->resetTime();
     }
 
     public function mount()
@@ -50,9 +52,10 @@ class Juego extends Component
 
     public function updateState()
     {
-        $estado = $this->fsm->actualizar();
+        $estado = $this->fsm->actualizar($this->getDeltaTime());
         $this->estadoActual = $estado->getNombre();
         $this->remainingTime = number_format($estado->getRestante(), 0);
+        $this->registerTime();
     }
 
     public function rock()
@@ -68,6 +71,22 @@ class Juego extends Component
     public function scissors()
     {
         $this->choice = 2;
+    }
+
+    private function getDeltaTime(): float
+    {
+        $currentTime = microtime(true);
+        $lastTime = session()->get('time');
+        return ($currentTime - $lastTime);
+    }
+
+    public function registerTime() {
+        session()->put('time', microtime(true));
+    }
+
+    public function resetTime()
+    {
+        session()->put('time', 0.0);
     }
 
     public function render()

@@ -46,30 +46,35 @@ class Estado
     public function siguientes(array $siguientes): Estado
     {
         foreach ($siguientes as $nombre) {
-            $this->siguiente($nombre);
+            $this->siguientes[] = $this->fsm->estado($nombre);
         }
         return $this;
     }
 
-    public function duración(float $duración): Estado
+    public function setDuración(float $duración): Estado
     {
         $this->duración = $duración;
         return $this;
     }
 
-    public function interactivo(): Estado
+    public function getDuración(): float
+    {
+        return $this->duración;
+    }
+
+    public function setAsInteractive(): Estado
     {
         $this->esInteractivo = true;
         return $this;
     }
 
-    public function esInicial(): Estado
+    public function setAsInitial(): Estado
     {
         $this->esInicio = true;
         return $this;
     }
 
-    public function esFinal(): Estado
+    public function setAsFinal(): Estado
     {
         $this->esFin = true;
         return $this;
@@ -83,6 +88,31 @@ class Estado
     public function getRestante(): float
     {
         return $this->restante;
+    }
+
+    public function esFinal(): bool
+    {
+        return $this->esFin;
+    }
+
+    public function esInicial(): bool
+    {
+        return $this->esInicio;
+    }
+
+    public function esInteractivo(): bool
+    {
+        return $this->esInteractivo;
+    }
+
+    public function esDecisión(): bool
+    {
+        return $this->esDecisión;
+    }
+
+    public function esPseudoEstado(): bool
+    {
+        return $this->esInicio || $this->esFin || $this->esDecisión;
     }
 
     public function alEntrar(callable $alEntrar): Estado
@@ -110,32 +140,54 @@ class Estado
 
     public function entrar(): void
     {
+        if ($this->esPseudoEstado()) {
+            $this->restante = 0;
+            $this->duración = 0;
+            return;
+        }
+
         $this->restante = $this->duración;
         if ($this->alEntrar) {
             call_user_func($this->alEntrar);
         }
     }
 
-    public function actualizar(float $deltaTime): ?Estado
+    public function actualizar(float $deltaTime): Estado
     {
+        // muestra el estado actual en la consola
+        echo $this->nombre . PHP_EOL;
         if ($this->esFin) {
-            return null;
+            return $this;
+        }
+
+        if (count($this->siguientes) === 0) {
+            throw new \Exception('El estado "' . $this->nombre . '" no tiene estados siguientes.');
+        }
+
+        if ($this->esInteractivo) {
+            return $this;
         }
 
         if ($this->esInicio) {
             return $this->siguientes[0];
         }
 
-        if ($this->esDecisión && !$this->durante) {
-            throw new \Exception('La decisión "' . $this->nombre . '" requiere un método para su lógica.');
-        }
+        if ($this->esDecisión) {
+            dd($this->siguientes);
+            return $this->siguientes[0];
+/*             if (!$this->durante) {
+                throw new \Exception('La decisión "' . $this->nombre . '" requiere un método para su lógica.');
+            }
 
-        if ($this->durante) {
-            return call_user_func($this->durante, $deltaTime);
+            if (count($this->siguientes) < 2) {
+                throw new \Exception('La decisión "' . $this->nombre . '" requiere al menos dos posibles estados siguientes.');
+            }
+
+            return call_user_func($this->durante, $deltaTime); */
         }
 
         if ($this->duración > 0) {
-            $this->remainingTime -= $deltaTime;
+            $this->restante -= $deltaTime;
             if ($this->restante <= 0) {
                 return $this->siguientes[0];
             }
@@ -145,6 +197,10 @@ class Estado
 
     public function salir(): void
     {
+        if ($this->esPseudoEstado()) {
+            return;
+        }
+
         if ($this->alSalir) {
             call_user_func($this->alSalir);
         }

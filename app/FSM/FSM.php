@@ -3,28 +3,25 @@
 namespace App\FSM;
 
 class FSM {
-
+    const FRECUENCIA = 0.1; // 100ms = 0.1s
     private $estados = [];
 
-    protected Estado $estadoActual;
-
-    private float $temporizador = 0;
+    private Estado $estadoActual;
 
     public static function crear(): FSM {
         $fsm = new FSM();
-        $fsm->resetTime();
+        $fsm->estadoActual = $fsm->estadoInicial();
         return $fsm;
     }
 
     public function estadoInicial(): Estado {
-        $estado = $this->estado('inicio')->esInicial();
-        $this->estadoActual = $estado;
+        $estado = $this->estado('inicio')->setAsInitial();
         return $estado;
     }
 
     public function estadoFinal(): Estado
     {
-        $fin = $this->estado('fin')->esFinal();
+        $fin = $this->estado('fin')->setAsFinal();
         return $fin;
     }
 
@@ -37,31 +34,23 @@ class FSM {
         return $estado;
     }
 
-    public function actualizar(): Estado {
+    public function actualizar(float $deltaTime): Estado {
         $estado = $this->estadoActual;
-        $nuevoEstado = $estado->actualizar($this->getDeltaTime());
-        if ($nuevoEstado !== null && $nuevoEstado !== $this->estadoActual) {
-            $estado->salir();
-            $this->estadoActual = $nuevoEstado;
-            $this->estadoActual->entrar();
-        }
-        $this->registerTime();
+        do {
+            $estado = $this->actualizarEstado($estado, self::FRECUENCIA);
+        } while ($estado->getRestante() > 0);
+
+        $this->estadoActual = $estado;
+
         return $this->estadoActual;
     }
 
-    public function registerTime() {
-        session()->put('time', microtime(true));
-    }
-
-    public function resetTime()
-    {
-        session()->put('time', 0.0);
-    }
-
-    private function getDeltaTime(): float
-    {
-        $currentTime = microtime(true);
-        $lastTime = session()->get('time');
-        return ($currentTime - $lastTime);
+    private function actualizarEstado(Estado $estado, float $deltaTime): Estado {
+        $nuevoEstado = $estado->actualizar($deltaTime);
+        if ($nuevoEstado !== $estado) {
+            $estado->salir();
+            $nuevoEstado->entrar();
+        }
+        return $nuevoEstado;
     }
 }
