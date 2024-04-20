@@ -17,9 +17,9 @@ class Juego extends Component
 
     private FSM $fsm;
 
-    public function __construct()
+    public function boot()
     {
-        $this->fsm = FSM::crear();
+        $this->fsm = new FSM($this);
         $this->fsm
             ->estadoInicial()
             ->decisión('¿Existe oponente?')
@@ -41,8 +41,8 @@ class Juego extends Component
             ])
             ->estado('mostrar resultado juego')->setDuración(4.0)
             ->fin();
-
-        $this->resetTime();
+        $this->estadoActual = session()->get('estadoActual', 'inicio');
+        $this->fsm->setEstadoActual($this->estadoActual);
     }
 
     public function mount()
@@ -56,6 +56,7 @@ class Juego extends Component
         $this->estadoActual = $estado->getNombre();
         $this->remainingTime = number_format($estado->getRestante(), 0);
         $this->registerTime();
+        session()->put('estadoActual', $this->estadoActual);
     }
 
     public function rock()
@@ -75,18 +76,22 @@ class Juego extends Component
 
     private function getDeltaTime(): float
     {
-        $currentTime = microtime(true);
+        $currentTime = floor(microtime(true) * 1000);
         $lastTime = session()->get('time');
         return ($currentTime - $lastTime);
     }
 
-    public function registerTime() {
-        session()->put('time', microtime(true));
+    public function registerTime()
+    {
+        session()->put('time', floor(microtime(true) * 1000));
     }
 
-    public function resetTime()
+    public function log(string $message, string $level = 'info')
     {
-        session()->put('time', 0.0);
+        $this->dispatch('log', [
+            'obj' => $message,
+            'level' => $level //warn, error, debug, info, etc...
+        ]);
     }
 
     public function render()

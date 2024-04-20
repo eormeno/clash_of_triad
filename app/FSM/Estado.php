@@ -154,8 +154,7 @@ class Estado
 
     public function actualizar(float $deltaTime): Estado
     {
-        // muestra el estado actual en la consola
-        echo $this->nombre . PHP_EOL;
+
         if ($this->esFin) {
             return $this;
         }
@@ -169,11 +168,12 @@ class Estado
         }
 
         if ($this->esInicio) {
+            $this->fsm->log('Inicio: ' . $this->nombre . ' -> ' . $this->siguientes[0]->getNombre());
             return $this->siguientes[0];
         }
 
         if ($this->esDecisión) {
-            dd($this->siguientes);
+            $this->fsm->log('Decisión: ' . $this->nombre);
             return $this->siguientes[0];
 /*             if (!$this->durante) {
                 throw new \Exception('La decisión "' . $this->nombre . '" requiere un método para su lógica.');
