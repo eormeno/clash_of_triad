@@ -18,9 +18,10 @@ class FSM
         $this->estadoActual = $this->estadoInicial();
     }
 
-    public function setEstadoActual(string $nombre): void
+    public function setEstadoActual(string $nombre, float $restante): void
     {
         $this->estadoActual = $this->estado($nombre);
+        $this->estadoActual->setRestante($restante);
     }
 
     public function estadoInicial(): Estado

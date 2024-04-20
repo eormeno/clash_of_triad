@@ -42,7 +42,8 @@ class Juego extends Component
             ->estado('mostrar resultado juego')->setDuración(4.0)
             ->fin();
         $this->estadoActual = session()->get('estadoActual', 'inicio');
-        $this->fsm->setEstadoActual($this->estadoActual);
+        $this->remainingTime = session()->get('remainingTime', 0);
+        $this->fsm->setEstadoActual($this->estadoActual, $this->remainingTime);
     }
 
     public function mount()
@@ -56,7 +57,8 @@ class Juego extends Component
         $this->estadoActual = $estado->getNombre();
         $this->remainingTime = number_format($estado->getRestante(), 0);
         $this->registerTime();
-        session()->put('estadoActual', $this->estadoActual);
+        session()->put('estadoActual', $estado->getNombre());
+        session()->put('remainingTime', $estado->getRestante());
     }
 
     public function rock()

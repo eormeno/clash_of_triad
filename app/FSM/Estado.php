@@ -90,6 +90,12 @@ class Estado
         return $this->restante;
     }
 
+    public function setRestante(float $restante): Estado
+    {
+        $this->restante = $restante;
+        return $this;
+    }
+
     public function esFinal(): bool
     {
         return $this->esFin;
