@@ -27,19 +27,19 @@ class Juego extends Component
                 'buscando oponente',
                 'oponente encontrado'
             ])
-            ->estado('buscando oponente')->setDuración(15.0)
-            ->siguiente('oponente encontrado')->setDuración(4.0)
-            ->siguiente('mostrar número ronda')->setDuración(3.0)
+            ->estado('buscando oponente')->setDuración(15000)
+            ->siguiente('oponente encontrado')->setDuración(4000)
+            ->siguiente('mostrar número ronda')->setDuración(3000)
             ->siguiente('pedir jugada')->setAsInteractive()
             ->siguiente('calcular')
-            ->siguiente('mostrar resultado ronda')->setDuración(2.0)
+            ->siguiente('mostrar resultado ronda')->setDuración(2000)
             ->siguiente('incrementar ronda')
             ->decisión('¿Es fin de juego?')
             ->siguientes([
                 'mostrar resultado juego',
                 'mostrar número ronda'
             ])
-            ->estado('mostrar resultado juego')->setDuración(4.0)
+            ->estado('mostrar resultado juego')->setDuración(4000)
             ->fin();
         $this->estadoActual = session()->get('estadoActual', 'inicio');
         $this->remainingTime = session()->get('remainingTime', 0);
