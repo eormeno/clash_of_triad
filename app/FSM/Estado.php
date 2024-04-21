@@ -153,6 +153,9 @@ class Estado
         }
 
         $this->restante = $this->duración;
+
+        $this->fsm->log('Entrando a: ' . $this->nombre);
+
         if ($this->alEntrar) {
             call_user_func($this->alEntrar);
         }
@@ -174,25 +177,26 @@ class Estado
         }
 
         if ($this->esInicio) {
-            $this->fsm->log('Inicio: ' . $this->nombre . ' -> ' . $this->siguientes[0]->getNombre());
+            //$this->fsm->log('Inicio: ' . $this->nombre . ' -> ' . $this->siguientes[0]->getNombre());
             return $this->siguientes[0];
         }
 
         if ($this->esDecisión) {
-            $this->fsm->log('Decisión: ' . $this->nombre);
+            //$this->fsm->log('Decisión: ' . $this->nombre . ' -> ' . $this->siguientes[0]->getNombre());
             return $this->siguientes[0];
-/*             if (!$this->durante) {
-                throw new \Exception('La decisión "' . $this->nombre . '" requiere un método para su lógica.');
-            }
+            /*             if (!$this->durante) {
+                            throw new \Exception('La decisión "' . $this->nombre . '" requiere un método para su lógica.');
+                        }
 
-            if (count($this->siguientes) < 2) {
-                throw new \Exception('La decisión "' . $this->nombre . '" requiere al menos dos posibles estados siguientes.');
-            }
+                        if (count($this->siguientes) < 2) {
+                            throw new \Exception('La decisión "' . $this->nombre . '" requiere al menos dos posibles estados siguientes.');
+                        }
 
-            return call_user_func($this->durante, $deltaTime); */
+                        return call_user_func($this->durante, $deltaTime); */
         }
 
         if ($this->duración > 0) {
+            $this->fsm->log('Duración: ' . $this->nombre . ' -> ' . $this->duración . ' -> ' . $deltaTime);
             $this->restante -= $deltaTime;
             if ($this->restante <= 0) {
                 return $this->siguientes[0];

@@ -5,7 +5,7 @@ use Livewire\Component;
 
 class FSM
 {
-    const FRECUENCIA = 100; // 100ms = 0.1s
+    const FRECUENCIA = 0.1; // 100ms = 0.1s
     private $estados = [];
 
     private Estado $estadoActual;
@@ -49,6 +49,8 @@ class FSM
     public function actualizar(float $deltaTime): Estado
     {
         $estado = $this->estadoActual;
+        // Acá se debería actualizar el estado actual hasta que se agote el tiempo pero
+        // se debería dividir el delta time en la frecuencia
         do {
             $estado = $this->actualizarEstado($estado, self::FRECUENCIA);
         } while ($estado->getRestante() > 0);

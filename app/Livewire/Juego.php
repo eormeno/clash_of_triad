@@ -51,6 +51,15 @@ class Juego extends Component
         $this->jugador = auth()->user()->name;
     }
 
+    public function clear()
+    {
+        $this->fsm->setEstadoActual('inicio', 0);
+        $this->estadoActual = 'inicio';
+        $this->remainingTime = 0;
+        session()->put('estadoActual', 'inicio');
+        session()->put('remainingTime', 0);
+    }
+
     public function updateState()
     {
         $estado = $this->fsm->actualizar($this->getDeltaTime());
