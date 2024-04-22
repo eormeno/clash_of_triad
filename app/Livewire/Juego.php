@@ -3,18 +3,16 @@
 namespace App\Livewire;
 
 use App\FSM\FSM;
+use App\FSM\Estado;
 use Livewire\Component;
 
 class Juego extends Component
 {
+    public float $interval;
     public string $remainingTime = '0';
-
     public $estadoActual = 'inicio';
-
     public $jugador = '';
-
     public $choice = -1;
-
     private FSM $fsm;
 
     public function boot()
@@ -48,6 +46,7 @@ class Juego extends Component
 
     public function mount()
     {
+        $this->interval = $this->fsm::UPDATE_INTERVAL;
         $this->jugador = auth()->user()->name;
     }
 
@@ -64,10 +63,15 @@ class Juego extends Component
     {
         $estado = $this->fsm->actualizar($this->getDeltaTime());
         $this->estadoActual = $estado->getNombre();
-        $this->remainingTime = number_format($estado->getRestante(), 0);
+        $this->remainingTime = $this->remainingSeconds($estado);
         $this->registerTime();
         session()->put('estadoActual', $estado->getNombre());
         session()->put('remainingTime', $estado->getRestante());
+    }
+
+    private function remainingSeconds(Estado $estado): int
+    {
+        return ceil($estado->getRestante() / 1000);
     }
 
     public function rock()

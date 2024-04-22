@@ -1,15 +1,14 @@
 <?php
 
 namespace App\FSM;
+
 use Livewire\Component;
 
 class FSM
 {
-    const FRECUENCIA = 1000; // 100ms = 0.1s
+    const UPDATE_INTERVAL = 1000; // ms
     private $estados = [];
-
     private Estado $estadoActual;
-
     private Component $component;
 
     public function __construct(Component $component)
@@ -48,13 +47,20 @@ class FSM
 
     public function actualizar(float $deltaTime): Estado
     {
+        // Si el tiempo es menor o igual a 1 no se actualiza el estado. Esto es para evitar
+        // que se actualice el estado en cada renderizado de Livewire. Lo cual puede suceder
+        // si el intervalo es muy corto en relación a la velocidad de la red o de las capacidades
+        // del servidor o del cliente.
+        if ($deltaTime <= 1) {
+            return $this->estadoActual;
+        }
         $estado = $this->estadoActual;
-        // Acá se debería actualizar el estado actual hasta que se agote el tiempo pero
-        // se debería dividir el delta time en la frecuencia
-//        do {
-            $estado = $this->actualizarEstado($estado, self::FRECUENCIA);
-//            $this->log('Restante: ' . $estado->getRestante());
-//        } while ($estado->getRestante() > 0);
+        // $this->log('$deltaTime = ' . $deltaTime . ' ms' . ' $estado = ' . $estado->getNombre());
+        while ($deltaTime > self::UPDATE_INTERVAL) {
+            $estado = $this->actualizarEstado($estado, self::UPDATE_INTERVAL);
+            $deltaTime -= self::UPDATE_INTERVAL;
+        }
+        $estado = $this->actualizarEstado($estado, $deltaTime);
         $this->estadoActual = $estado;
         return $this->estadoActual;
     }
@@ -62,9 +68,8 @@ class FSM
     private function actualizarEstado(Estado $estado, float $deltaTime): Estado
     {
         $nuevoEstado = $estado->actualizar($deltaTime);
-        //$this->log('Estado actual: ' . $nuevoEstado->getNombre());
         if ($nuevoEstado !== $estado) {
-            //$this->log('Saliendo de ' . $estado->getNombre());
+            $this->log('$nuevoEstado: ' . $nuevoEstado->getNombre());
             $estado->salir();
             $nuevoEstado->entrar();
         }

@@ -151,11 +151,8 @@ class Estado
             $this->duración = 0;
             return;
         }
-
         $this->restante = $this->duración;
-
-        $this->fsm->log('Entrando a: ' . $this->nombre);
-
+        //$this->fsm->log('Entrando a: ' . $this->nombre);
         if ($this->alEntrar) {
             call_user_func($this->alEntrar);
         }
@@ -163,24 +160,19 @@ class Estado
 
     public function actualizar(float $deltaTime): Estado
     {
-
         if ($this->esFin) {
             return $this;
         }
-
         if (count($this->siguientes) === 0) {
             throw new \Exception('El estado "' . $this->nombre . '" no tiene estados siguientes.');
         }
-
         if ($this->esInteractivo) {
             return $this;
         }
-
         if ($this->esInicio) {
             //$this->fsm->log('Inicio: ' . $this->nombre . ' -> ' . $this->siguientes[0]->getNombre());
             return $this->siguientes[0];
         }
-
         if ($this->esDecisión) {
             //$this->fsm->log('Decisión: ' . $this->nombre . ' -> ' . $this->siguientes[0]->getNombre());
             return $this->siguientes[0];
@@ -194,9 +186,8 @@ class Estado
 
                         return call_user_func($this->durante, $deltaTime); */
         }
-
         if ($this->duración > 0) {
-            $this->fsm->log('Duración: ' . $this->nombre . ' -> ' . $this->duración . ' -> ' . $deltaTime);
+            //$this->fsm->log('Duración: ' . $this->nombre . ' -> ' . $this->duración . ' -> ' . $deltaTime);
             $this->restante -= $deltaTime;
             if ($this->restante <= 0) {
                 return $this->siguientes[0];
@@ -210,7 +201,6 @@ class Estado
         if ($this->esPseudoEstado()) {
             return;
         }
-
         if ($this->alSalir) {
             call_user_func($this->alSalir);
         }
