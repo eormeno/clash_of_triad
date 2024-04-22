@@ -11,8 +11,8 @@ class Juego extends Component
     public float $interval;
     public string $remainingTime = '0';
     public $estadoActual = 'inicio';
+    public $variables = [];
     public $jugador = '';
-    public $choice = -1;
     private FSM $fsm;
 
     public function boot()
@@ -25,10 +25,10 @@ class Juego extends Component
                 'buscando oponente',
                 'oponente encontrado'
             ])
-            ->estado('buscando oponente')->setDuración(15000)
-            ->siguiente('oponente encontrado')->setDuración(4000)
-            ->siguiente('mostrar número ronda')->setDuración(3000)
-            ->siguiente('pedir jugada')->setAsInteractive()
+            ->estado('buscando oponente')->setDuración(10000)
+            ->siguiente('oponente encontrado')->setDuración(2000)
+            ->siguiente('mostrar número ronda')->setDuración(2000)
+            ->siguiente('pedir jugada')->waitFor("play")
             ->siguiente('calcular')
             ->siguiente('mostrar resultado ronda')->setDuración(2000)
             ->siguiente('incrementar ronda')
@@ -41,7 +41,8 @@ class Juego extends Component
             ->fin();
         $this->estadoActual = session()->get('estadoActual', 'inicio');
         $this->remainingTime = session()->get('remainingTime', 0);
-        $this->fsm->setEstadoActual($this->estadoActual, $this->remainingTime);
+        $this->variables = session()->get('variables', []);
+        $this->fsm->setEstadoActual($this->estadoActual, $this->remainingTime, $this->variables);
     }
 
     public function mount()
@@ -52,9 +53,10 @@ class Juego extends Component
 
     public function clear()
     {
-        $this->fsm->setEstadoActual('inicio', 0);
+        $this->fsm->setEstadoActual('inicio', 0, []);
         $this->estadoActual = 'inicio';
         $this->remainingTime = 0;
+        session()->put('variables', []);
         session()->put('estadoActual', 'inicio');
         session()->put('remainingTime', 0);
     }
@@ -67,6 +69,7 @@ class Juego extends Component
         $this->registerTime();
         session()->put('estadoActual', $estado->getNombre());
         session()->put('remainingTime', $estado->getRestante());
+        session()->put('variables', $this->variables);
     }
 
     private function remainingSeconds(Estado $estado): int
@@ -74,19 +77,9 @@ class Juego extends Component
         return ceil($estado->getRestante() / 1000);
     }
 
-    public function rock()
+    public function play(int $choice)
     {
-        $this->choice = 0;
-    }
-
-    public function paper()
-    {
-        $this->choice = 1;
-    }
-
-    public function scissors()
-    {
-        $this->choice = 2;
+        $this->variables['play'] = $choice;
     }
 
     private function getDeltaTime(): float

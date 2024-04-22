@@ -8,6 +8,7 @@ class FSM
 {
     const UPDATE_INTERVAL = 1000; // ms
     private $estados = [];
+    private $variables = [];
     private Estado $estadoActual;
     private Component $component;
 
@@ -17,10 +18,11 @@ class FSM
         $this->estadoActual = $this->estadoInicial();
     }
 
-    public function setEstadoActual(string $nombre, float $restante): void
+    public function setEstadoActual(string $nombre, float $restante, array $variables): void
     {
         $this->estadoActual = $this->estado($nombre);
         $this->estadoActual->setRestante($restante);
+        $this->variables = $variables;
     }
 
     public function estadoInicial(): Estado
@@ -69,11 +71,29 @@ class FSM
     {
         $nuevoEstado = $estado->actualizar($deltaTime);
         if ($nuevoEstado !== $estado) {
-            $this->log('$nuevoEstado: ' . $nuevoEstado->getNombre());
+            $this->log("{$estado->getNombre()} -> {$nuevoEstado->getNombre()}");
             $estado->salir();
             $nuevoEstado->entrar();
         }
         return $nuevoEstado;
+    }
+
+    public function setValue(string $variable_name, $value = null): void
+    {
+        $this->variables[$variable_name] = $value;
+    }
+
+    public function getValue(string $variable_name)
+    {
+        if (!array_key_exists($variable_name, $this->variables)) {
+            return null;
+        }
+        return $this->variables[$variable_name];
+    }
+
+    public function hasValue(string $variable_name): bool
+    {
+        return array_key_exists($variable_name, $this->variables) && $this->variables[$variable_name] !== null;
     }
 
     public function log(string $mensaje, $nivel = 'info')
