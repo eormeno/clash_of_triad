@@ -6,6 +6,7 @@ use Livewire\Component;
 
 class FSM
 {
+    const MAXIMUM_DELTA_TIME = 10000; // ms
     const UPDATE_INTERVAL = 1000; // ms
     private $estados = [];
     private $variables = [];
@@ -55,6 +56,9 @@ class FSM
         // del servidor o del cliente.
         if ($deltaTime <= 1) {
             return $this->estadoActual;
+        }
+        if ($deltaTime > self::MAXIMUM_DELTA_TIME) {
+            $deltaTime = self::MAXIMUM_DELTA_TIME;
         }
         $estado = $this->estadoActual;
         // $this->log('$deltaTime = ' . $deltaTime . ' ms' . ' $estado = ' . $estado->getNombre());

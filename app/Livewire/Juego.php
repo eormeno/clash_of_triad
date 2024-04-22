@@ -5,12 +5,15 @@ namespace App\Livewire;
 use App\FSM\FSM;
 use App\FSM\Estado;
 use Livewire\Component;
+use Livewire\Attributes\On;
 
 class Juego extends Component
 {
     public float $interval;
     public string $remainingTime = '0';
     public $estadoActual = 'inicio';
+    public $oponentChoice = -1;
+    public $resultadoRonda = '';
     public $variables = [];
     public $jugador = '';
     private FSM $fsm;
@@ -29,7 +32,7 @@ class Juego extends Component
             ->siguiente('oponente encontrado')->setDuración(2000)
             ->siguiente('mostrar número ronda')->setDuración(2000)
             ->siguiente('pedir jugada')->waitFor("play")
-            ->siguiente('calcular')
+            ->siguiente('calcular')->alEntrar(fn () => $this->calcular())
             ->siguiente('mostrar resultado ronda')->setDuración(2000)
             ->siguiente('incrementar ronda')
             ->decisión('¿Es fin de juego?')
@@ -61,6 +64,7 @@ class Juego extends Component
         session()->put('remainingTime', 0);
     }
 
+    #[On('choice-made')]
     public function updateState()
     {
         $estado = $this->fsm->actualizar($this->getDeltaTime());
@@ -72,6 +76,29 @@ class Juego extends Component
         session()->put('variables', $this->variables);
     }
 
+    public function calcular()
+    {
+        // 0 = papel, 1 = piedra, 2 = tijera
+        $this->oponent_choice = rand(0, 2);
+        $my_choice = $this->variables['play'];
+        $resultado = '';
+        if ($this->oponent_choice == $my_choice) {
+            $resultado = 'Empate';
+        } elseif ($this->oponent_choice == 0 && $my_choice == 1) {
+            $resultado = 'Gana oponente';
+        } elseif ($this->oponent_choice == 1 && $my_choice == 2) {
+            $resultado = 'Gana oponente';
+        } elseif ($this->oponent_choice == 2 && $my_choice == 0) {
+            $resultado = 'Gana oponente';
+        } else {
+            $resultado = 'Gana jugador';
+        }
+        $this->resultadoRonda = $resultado;
+
+        session()->put('variables', $this->variables);
+        $this->dispatch('choice-made');
+    }
+
     private function remainingSeconds(Estado $estado): int
     {
         return ceil($estado->getRestante() / 1000);
@@ -80,6 +107,8 @@ class Juego extends Component
     public function play(int $choice)
     {
         $this->variables['play'] = $choice;
+        session()->put('variables', $this->variables);
+        $this->dispatch('choice-made');
     }
 
     private function getDeltaTime(): float
