@@ -10,7 +10,7 @@
         {{ __('Jugador') }}: {{ $jugador }}
     </h1>
 
-    <div x-init="setInterval(() => { $wire.updateState(); }, {{ $interval }})">
+    <div x-init="setInterval(() => { $wire.updateState(); }, 1000)">
         <h1 class="mt-8 text-2xl font-medium text-gray-900 dark:text-white">
             {{ __('Estado de juego') }} : {{ $estadoActual }} : {{ $remainingTime }}
         </h1>

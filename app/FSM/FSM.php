@@ -6,6 +6,7 @@ use Livewire\Component;
 
 class FSM
 {
+    const MAXIMUM_REMAINING_TIME = 10000; // ms
     const UPDATE_INTERVAL = 1000; // ms
     private $estados = [];
     private Estado $estadoActual;
@@ -47,6 +48,9 @@ class FSM
 
     public function actualizar(float $deltaTime): Estado
     {
+        if ($deltaTime > self::MAXIMUM_REMAINING_TIME) {
+            $deltaTime = self::MAXIMUM_REMAINING_TIME;
+        }
         // Si el tiempo es menor o igual a 1 no se actualiza el estado. Esto es para evitar
         // que se actualice el estado en cada renderizado de Livewire. Lo cual puede suceder
         // si el intervalo es muy corto en relación a la velocidad de la red o de las capacidades
@@ -55,7 +59,7 @@ class FSM
             return $this->estadoActual;
         }
         $estado = $this->estadoActual;
-        // $this->log('$deltaTime = ' . $deltaTime . ' ms' . ' $estado = ' . $estado->getNombre());
+        //$this->log('$deltaTime = ' . $deltaTime . ' ms' . ' $estado = ' . $estado->getNombre());
         while ($deltaTime > self::UPDATE_INTERVAL) {
             $estado = $this->actualizarEstado($estado, self::UPDATE_INTERVAL);
             $deltaTime -= self::UPDATE_INTERVAL;
