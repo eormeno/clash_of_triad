@@ -16,6 +16,7 @@ class FSM
     {
         $this->component = $component;
         $this->estadoActual = $this->estadoInicial();
+        $this->estadoFinal();
     }
 
     public function setEstadoActual(string $nombre, float $restante): void

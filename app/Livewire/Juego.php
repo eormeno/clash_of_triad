@@ -24,7 +24,9 @@ class Juego extends Component
     private const NOMBRES = [0 => 'Papel', 1 => 'Piedra', 2 => 'Tiijera'];
     public float $interval;
     public string $remainingTime = '0';
-    public $ronda = 1;
+    public $ronda = 0;
+    public $puntajeJugador = 0;
+    public $puntajeOponente = 0;
     public $estadoActual = 'inicio';
     public $choice = -1;
     public $oponent_choice = -1;
@@ -44,17 +46,13 @@ class Juego extends Component
             ])
             ->estado('buscando oponente')->setDuración(10000)
             ->siguiente('oponente encontrado')->setDuración(2000)
+            ->siguiente('iterar ronda')->startIteration($this->ronda, self::RONDAS)
             ->siguiente('mostrar número ronda')->setDuración(2000)
             ->siguiente('pedir jugada')->waitFor(fn() => $this->checkChoiceMade())
             ->siguiente('calcular')->alEntrar(fn() => $this->calcular())
             ->siguiente('mostrar resultado ronda')->setDuración(4000)
-            ->siguiente('incrementar ronda')->alEntrar(fn() => $this->incrementarRonda())
-            ->decisión('¿Es fin de juego?')
-            ->siguientes([
-                'mostrar número ronda',
-                'mostrar resultado juego',
-            ])
-            ->estado('mostrar resultado juego')->setDuración(4000)
+            ->siguiente('fin iteración ronda')->endIteration('iterar ronda')
+            ->siguiente('mostrar resultado juego')->setDuración(4000)
             ->fin();
         $this->estadoActual = session()->get('estadoActual', 'inicio');
         $this->remainingTime = session()->get('remainingTime', 0);

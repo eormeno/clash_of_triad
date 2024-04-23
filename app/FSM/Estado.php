@@ -11,6 +11,13 @@ class Estado
     private bool $esFin = false;
     private bool $esDecisión = false;
     private bool $esInteractivo = false;
+    private bool $isStartIteration = false;
+    private bool $isEndIteration = false;
+    private Estado $iterationStart;
+    private Estado $iterationEnd;
+    private int $from = 1;
+    private int $to = -1;
+    private $variable = null;
     private array $siguientes = [];
     private float $restante = 0;
     private $alEntrar = null;
@@ -66,6 +73,22 @@ class Estado
     {
         $this->esInteractivo = true;
         $this->durante = $durante;
+        return $this;
+    }
+
+    public function startIteration(&$variable, int $to, int $from = 1): Estado {
+        $this->isStartIteration = true;
+        $this->variable = &$variable;
+        $this->to = $to;
+        $this->from = $from;
+        return $this;
+    }
+
+    public function endIteration(string $name): Estado {
+        $this->isEndIteration = true;
+        $itarationState = $this->fsm->estado($name);
+        $itarationState->iterationEnd = $this;
+        $this->iterationStart = $itarationState;
         return $this;
     }
 
@@ -175,7 +198,6 @@ class Estado
             return $this;
         }
         if ($this->esInicio) {
-            //$this->fsm->log('Inicio: ' . $this->nombre . ' -> ' . $this->siguientes[0]->getNombre());
             return $this->siguientes[0];
         }
         if ($this->esDecisión) {
@@ -198,8 +220,20 @@ class Estado
                 return $this->siguientes[0];
             }
         }
+        // si es un estado de cálculo... (hay que mejorar esto)
         if ($this->alEntrar) {
             return $this->siguientes[0];
+        }
+
+        if ($this->isStartIteration) {
+            if ($this->variable < $this->to) {
+                $this->variable++;
+                return $this->siguientes[0];
+            }
+            return $this->iterationEnd->siguientes[0];
+        }
+        if ($this->isEndIteration) {
+            return $this->iterationStart;
         }
         return $this;
     }
