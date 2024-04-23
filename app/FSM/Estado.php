@@ -11,7 +11,6 @@ class Estado
     private bool $esFin = false;
     private bool $esDecisión = false;
     private bool $esInteractivo = false;
-    private string $variable = '';
     private array $siguientes = [];
     private float $restante = 0;
     private $alEntrar = null;
@@ -63,11 +62,10 @@ class Estado
         return $this->duración;
     }
 
-    public function waitFor(string $variable_name): Estado
+    public function waitFor(callable $durante): Estado
     {
         $this->esInteractivo = true;
-        $this->variable = $variable_name;
-        $this->fsm->setValue($variable_name);
+        $this->durante = $durante;
         return $this;
     }
 
@@ -155,7 +153,6 @@ class Estado
             return;
         }
         $this->restante = $this->duración;
-        //$this->fsm->log('Entrando a: ' . $this->nombre);
         if ($this->alEntrar) {
             call_user_func($this->alEntrar);
         }
@@ -170,9 +167,10 @@ class Estado
             throw new \Exception('El estado "' . $this->nombre . '" no tiene estados siguientes.');
         }
         if ($this->esInteractivo) {
-            $this->fsm->log('Variable: ' . $this->variable . ' = ' . $this->fsm->getValue($this->variable));
-            if ($this->fsm->hasValue($this->variable)) {
-                return $this->siguientes[0];
+            if ($this->durante) {
+                if (call_user_func($this->durante)) {
+                    return $this->siguientes[0];
+                }
             }
             return $this;
         }
@@ -199,6 +197,9 @@ class Estado
             if ($this->restante <= 0) {
                 return $this->siguientes[0];
             }
+        }
+        if ($this->alEntrar) {
+            return $this->siguientes[0];
         }
         return $this;
     }

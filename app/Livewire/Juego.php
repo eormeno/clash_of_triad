@@ -9,12 +9,26 @@ use Livewire\Attributes\On;
 
 class Juego extends Component
 {
+    private const RONDA_EMPATE = "La ronda terminó en empate";
+    private const RONDA_GANA_JUGADOR = "Ganaste la ronda";
+    private const RONDA_GANA_OPONENTE = "Perdiste esta ronda";
+    private const GANA_JUEGO = "¡Ganaste el juego!";
+    private const PIERDE_JUEGO = "¡Perdiste el juego!";
+    private const EMPATE_JUEGO = "El juego terminó en empate";
+    private const JUGADOR = 'Jugador';
+    private const OPONENTE = 'Oponente';
+    private const RONDAS = 3;
+    private const PAPEL = 0;
+    private const PIEDRA = 1;
+    private const TIJERA = 2;
+    private const NOMBRES = [0 => 'Papel', 1 => 'Piedra', 2 => 'Tiijera'];
     public float $interval;
     public string $remainingTime = '0';
+    public $ronda = 1;
     public $estadoActual = 'inicio';
-    public $oponentChoice = -1;
+    public $choice = -1;
+    public $oponent_choice = -1;
     public $resultadoRonda = '';
-    public $variables = [];
     public $jugador = '';
     private FSM $fsm;
 
@@ -31,21 +45,20 @@ class Juego extends Component
             ->estado('buscando oponente')->setDuración(10000)
             ->siguiente('oponente encontrado')->setDuración(2000)
             ->siguiente('mostrar número ronda')->setDuración(2000)
-            ->siguiente('pedir jugada')->waitFor("play")
-            ->siguiente('calcular')->alEntrar(fn () => $this->calcular())
-            ->siguiente('mostrar resultado ronda')->setDuración(2000)
-            ->siguiente('incrementar ronda')
+            ->siguiente('pedir jugada')->waitFor(fn() => $this->checkChoiceMade())
+            ->siguiente('calcular')->alEntrar(fn() => $this->calcular())
+            ->siguiente('mostrar resultado ronda')->setDuración(4000)
+            ->siguiente('incrementar ronda')->alEntrar(fn() => $this->incrementarRonda())
             ->decisión('¿Es fin de juego?')
             ->siguientes([
+                'mostrar número ronda',
                 'mostrar resultado juego',
-                'mostrar número ronda'
             ])
             ->estado('mostrar resultado juego')->setDuración(4000)
             ->fin();
         $this->estadoActual = session()->get('estadoActual', 'inicio');
         $this->remainingTime = session()->get('remainingTime', 0);
-        $this->variables = session()->get('variables', []);
-        $this->fsm->setEstadoActual($this->estadoActual, $this->remainingTime, $this->variables);
+        $this->fsm->setEstadoActual($this->estadoActual, $this->remainingTime);
     }
 
     public function mount()
@@ -56,10 +69,10 @@ class Juego extends Component
 
     public function clear()
     {
-        $this->fsm->setEstadoActual('inicio', 0, []);
+        $this->fsm->setEstadoActual('inicio', 0);
         $this->estadoActual = 'inicio';
         $this->remainingTime = 0;
-        session()->put('variables', []);
+        $this->ronda = 1;
         session()->put('estadoActual', 'inicio');
         session()->put('remainingTime', 0);
     }
@@ -73,30 +86,32 @@ class Juego extends Component
         $this->registerTime();
         session()->put('estadoActual', $estado->getNombre());
         session()->put('remainingTime', $estado->getRestante());
-        session()->put('variables', $this->variables);
     }
 
     public function calcular()
     {
         // 0 = papel, 1 = piedra, 2 = tijera
+        $mensaje = '';
         $this->oponent_choice = rand(0, 2);
-        $my_choice = $this->variables['play'];
-        $resultado = '';
-        if ($this->oponent_choice == $my_choice) {
-            $resultado = 'Empate';
-        } elseif ($this->oponent_choice == 0 && $my_choice == 1) {
-            $resultado = 'Gana oponente';
-        } elseif ($this->oponent_choice == 1 && $my_choice == 2) {
-            $resultado = 'Gana oponente';
-        } elseif ($this->oponent_choice == 2 && $my_choice == 0) {
-            $resultado = 'Gana oponente';
+        if ($this->oponent_choice == $this->choice) {
+            $mensaje = self::RONDA_EMPATE;
+        } elseif ($this->oponent_choice == self::PAPEL && $this->choice == self::PIEDRA) {
+            $mensaje = self::RONDA_GANA_OPONENTE;
+        } elseif ($this->oponent_choice == self::PIEDRA && $this->choice == self::TIJERA) {
+            $mensaje = self::RONDA_GANA_OPONENTE;
+        } elseif ($this->oponent_choice == self::TIJERA && $this->choice == self::PAPEL) {
+            $mensaje = self::RONDA_GANA_OPONENTE;
         } else {
-            $resultado = 'Gana jugador';
+            $mensaje = self::RONDA_GANA_JUGADOR;
         }
-        $this->resultadoRonda = $resultado;
+        $mensaje .= ' ' . self::NOMBRES[$this->choice] . ' vs ' . self::NOMBRES[$this->oponent_choice];
+        $this->resultadoRonda = $mensaje;
+        $this->choice = -1;
+    }
 
-        session()->put('variables', $this->variables);
-        $this->dispatch('choice-made');
+    public function incrementarRonda()
+    {
+        $this->ronda++;
     }
 
     private function remainingSeconds(Estado $estado): int
@@ -106,9 +121,13 @@ class Juego extends Component
 
     public function play(int $choice)
     {
-        $this->variables['play'] = $choice;
-        session()->put('variables', $this->variables);
+        $this->choice = $choice;
         $this->dispatch('choice-made');
+    }
+
+    public function checkChoiceMade()
+    {
+        return $this->choice !== -1;
     }
 
     private function getDeltaTime(): float

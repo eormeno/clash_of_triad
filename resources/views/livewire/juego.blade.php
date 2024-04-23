@@ -37,4 +37,10 @@
         </h1>
     </div>
 
+    <div x-show="$wire.estadoActual === 'mostrar número ronda'" class="mt-6 align middle">
+        <h1 class="mt-8 text-2xl font-medium text-gray-900 dark:text-white">
+            {{ __('Ronda') }} : {{ $ronda }}
+        </h1>
+    </div>
+
 </div>
