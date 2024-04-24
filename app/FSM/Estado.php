@@ -30,6 +30,10 @@ class Estado
         $this->nombre = $nombre;
     }
 
+    public function tab(): Estado {
+        return $this;
+    }
+
     public function isVisible(): bool
     {
         return $this->esFin || $this->esInteractivo || $this->duración > 0;
