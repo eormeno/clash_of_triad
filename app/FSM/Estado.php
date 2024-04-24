@@ -24,10 +24,22 @@ class Estado
     private $durante = null;
     private $alSalir = null;
 
+    protected $_data = array(
+        '__' => null
+    );
+
     public function __construct(FSM $fsm, string $nombre)
     {
         $this->fsm = $fsm;
         $this->nombre = $nombre;
+    }
+
+    public function __get($name)
+    {
+        if (array_key_exists($name, $this->_data)) {
+            return $this;
+        }
+        return null;
     }
 
     public function tab(): Estado {
