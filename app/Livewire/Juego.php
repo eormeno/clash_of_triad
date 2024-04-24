@@ -9,12 +9,22 @@ use Livewire\Attributes\On;
 
 class Juego extends Component
 {
-    private const RONDA_EMPATE = "La ronda terminó en empate";
-    private const RONDA_GANA_JUGADOR = "Ganaste la ronda";
-    private const RONDA_GANA_OPONENTE = "Perdiste esta ronda";
-    private const GANA_JUEGO = "¡Ganaste el juego!";
-    private const PIERDE_JUEGO = "¡Perdiste el juego!";
-    private const EMPATE_JUEGO = "El juego terminó en empate";
+    private const RONDA_EMPATE_INDICE = 0;
+    private const RONDA_GANA_OPONENTE_INDICE = 1;
+    private const RONDA_GANA_JUGADOR_INDICE = 2;
+    private const JUEGO_EMPATE_INDICE = 0;
+    private const JUEGO_GANA_INDICE = 1;
+    private const JUEGO_PIERDE_INDICE = 2;
+    private const MENSAJES_RONDA = [
+        "La ronda terminó en empate",
+        "Perdiste esta ronda",
+        "Ganaste la ronda"
+    ];
+    private const MENSAJES_JUEGO = [
+        "El juego terminó en empate",
+        "¡Ganaste el juego!",
+        "¡Perdiste el juego!"
+    ];
     private const JUGADOR = 'Jugador';
     private const OPONENTE = 'Oponente';
     private const RONDAS = 3;
@@ -70,7 +80,9 @@ class Juego extends Component
         $this->fsm->setEstadoActual('inicio', 0);
         $this->estadoActual = 'inicio';
         $this->remainingTime = 0;
-        $this->ronda = 1;
+        $this->ronda = 0;
+        $this->puntajeJugador = 0;
+        $this->puntajeOponente = 0;
         session()->put('estadoActual', 'inicio');
         session()->put('remainingTime', 0);
     }
@@ -88,23 +100,51 @@ class Juego extends Component
 
     public function calcular()
     {
-        // 0 = papel, 1 = piedra, 2 = tijera
-        $mensaje = '';
-        $this->oponent_choice = rand(0, 2);
+        $resultadoRonda = 0;
+        $this->oponent_choice = $this->juegoOponente();
         if ($this->oponent_choice == $this->choice) {
-            $mensaje = self::RONDA_EMPATE;
+            $resultadoRonda = self::RONDA_EMPATE_INDICE;
         } elseif ($this->oponent_choice == self::PAPEL && $this->choice == self::PIEDRA) {
-            $mensaje = self::RONDA_GANA_OPONENTE;
+            $resultadoRonda = self::RONDA_GANA_OPONENTE_INDICE;
         } elseif ($this->oponent_choice == self::PIEDRA && $this->choice == self::TIJERA) {
-            $mensaje = self::RONDA_GANA_OPONENTE;
+            $resultadoRonda = self::RONDA_GANA_OPONENTE_INDICE;
         } elseif ($this->oponent_choice == self::TIJERA && $this->choice == self::PAPEL) {
-            $mensaje = self::RONDA_GANA_OPONENTE;
+            $resultadoRonda = self::RONDA_GANA_OPONENTE_INDICE;
         } else {
-            $mensaje = self::RONDA_GANA_JUGADOR;
+            $resultadoRonda = self::RONDA_GANA_JUGADOR_INDICE;
         }
+        $this->calcularPuntaje($resultadoRonda);
+        $mensaje = $this->obtenerMensajeRonda($resultadoRonda);
         $mensaje .= ' ' . self::NOMBRES[$this->choice] . ' vs ' . self::NOMBRES[$this->oponent_choice];
         $this->resultadoRonda = $mensaje;
         $this->choice = -1;
+    }
+
+    private function juegoOponente(): int
+    {
+        return rand(0, 2);
+    }
+
+    /**
+     * Calcula el puntaje de la ronda. Hay dos puntos en juego. Si hay empate, se asigna un punto a cada jugador.
+     * De lo contrario, se asignan los dos puntos al ganador.
+     * Recibe el resultado de la ronda.
+     */
+    private function calcularPuntaje(int $resultadoRonda)
+    {
+        if ($resultadoRonda == self::RONDA_EMPATE_INDICE) {
+            $this->puntajeJugador++;
+            $this->puntajeOponente++;
+        } elseif ($resultadoRonda == self::RONDA_GANA_JUGADOR_INDICE) {
+            $this->puntajeJugador += 2;
+        } else {
+            $this->puntajeOponente += 2;
+        }
+    }
+
+    private function obtenerMensajeRonda(int $resultadoRonda): string
+    {
+        return self::MENSAJES_RONDA[$resultadoRonda];
     }
 
     public function incrementarRonda()

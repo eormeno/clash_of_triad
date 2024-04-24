@@ -3,17 +3,20 @@
 
     <button wire:click="clear"
         class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-gray-700 border border-transparent rounded-md shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-        Reset
+        Clear
     </button>
 
+    <!--
     <h1 class="mt-8 text-2xl font-medium text-gray-900 dark:text-white">
         {{ __('Jugador') }}: {{ $jugador }}
     </h1>
-
+    -->
     <div x-init="setInterval(() => { $wire.updateState(); }, 1000)">
+        <!--
         <h1 class="mt-8 text-2xl font-medium text-gray-900 dark:text-white">
             {{ __('Estado de juego') }} : {{ $estadoActual }} : {{ $remainingTime }}
         </h1>
+        -->
     </div>
 
     <div x-show="$wire.estadoActual === 'buscando oponente'" class="mt-6 align-middle">
@@ -46,6 +49,15 @@
     <div x-show="$wire.estadoActual === 'mostrar número ronda'" class="mt-6 align middle">
         <h1 class="mt-8 text-2xl font-medium text-gray-900 dark:text-white">
             {{ __('Ronda') }} : {{ $ronda }}
+        </h1>
+    </div>
+
+    <div x-show="$wire.estadoActual === 'mostrar resultado juego'" class="mt-6 align middle">
+        <h1 class="mt-8 text-2xl font-medium text-gray-900 dark:text-white">
+            {{ __('Tu puntaje: ') }} {{ $puntajeJugador }}
+        </h1>
+        <h1 class="mt-8 text-2xl font-medium text-gray-900 dark:text-white">
+            {{ __('Puntaje oponente: ') }} {{ $puntajeOponente }}
         </h1>
     </div>
 
