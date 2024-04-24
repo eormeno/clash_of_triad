@@ -38,6 +38,7 @@ class Juego extends Component
     public $puntajeJugador = 0;
     public $puntajeOponente = 0;
     public $estadoActual = 'inicio';
+    public $estadoUI;
     public $choice = -1;
     public $oponent_choice = -1;
     public $resultadoRonda = '';
@@ -91,6 +92,9 @@ class Juego extends Component
     public function updateState()
     {
         $estado = $this->fsm->actualizar($this->getDeltaTime());
+        if ($estado->isVisible()) {
+            $this->estadoUI = $estado->getNombre();
+        }
         $this->estadoActual = $estado->getNombre();
         $this->remainingTime = $this->remainingSeconds($estado);
         $this->registerTime();

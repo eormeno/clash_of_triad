@@ -30,6 +30,11 @@ class Estado
         $this->nombre = $nombre;
     }
 
+    public function isVisible(): bool
+    {
+        return $this->esFin || $this->esInteractivo || $this->duración > 0;
+    }
+
     public function siguiente(string $nombre): Estado
     {
         $siguiente = $this->fsm->estado($nombre);

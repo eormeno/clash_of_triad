@@ -14,7 +14,7 @@
         -->
     </div>
 
-    @switch($estadoActual)
+    @switch($estadoUI)
         @case('buscando oponente')
             <div class="mt-6 align-middle">
                 <h1 class="mt-8 text-2xl font-medium text-gray-900 dark:text-white">
