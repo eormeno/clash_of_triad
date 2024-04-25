@@ -15,7 +15,7 @@ class FSM
     public function __construct(Component $component)
     {
         $this->component = $component;
-        $this->estadoActual = $this->estadoInicial();
+        $this->estadoActual = $this->inicio();
         $this->estadoFinal();
     }
 
@@ -25,7 +25,7 @@ class FSM
         $this->estadoActual->setRestante($restante);
     }
 
-    public function estadoInicial(): Estado
+    public function inicio(): Estado
     {
         $estado = $this->estado('inicio')->setAsInitial();
         return $estado;
@@ -57,7 +57,7 @@ class FSM
             return $this->estadoActual;
         }
         if ($deltaTime > self::MAXIMUM_DELTA_TIME) {
-            $deltaTime = self::MAXIMUM_DELTA_TIME;
+            return $this->estadoActual;
         }
         $estado = $this->estadoActual;
         // $this->log('$deltaTime = ' . $deltaTime . ' ms' . ' $estado = ' . $estado->getNombre());

@@ -202,6 +202,16 @@ class Estado
         }
     }
 
+    public function salir(): void
+    {
+        if ($this->esPseudoEstado()) {
+            return;
+        }
+        if ($this->alSalir) {
+            call_user_func($this->alSalir);
+        }
+    }
+
     public function actualizar(float $deltaTime): Estado
     {
         if ($this->esFin) {
@@ -259,13 +269,5 @@ class Estado
         return $this;
     }
 
-    public function salir(): void
-    {
-        if ($this->esPseudoEstado()) {
-            return;
-        }
-        if ($this->alSalir) {
-            call_user_func($this->alSalir);
-        }
-    }
+
 }

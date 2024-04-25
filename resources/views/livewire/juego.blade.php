@@ -36,6 +36,13 @@
                 <h1 class="mt-8 text-2xl font-medium text-gray-900 dark:text-white">
                     {{ __('Ronda') }} : {{ $ronda }}
                 </h1>
+                <!-- the player points and the opponent points -->
+                <h1 class="mt-8 text-2xl font-medium text-gray-900 dark:text-white">
+                    {{ __('Tu puntaje: ') }} {{ $puntajeJugador }}
+                </h1>
+                <h1 class="mt-8 text-2xl font-medium text-gray-900 dark:text-white">
+                    {{ __('Puntaje oponente: ') }} {{ $puntajeOponente }}
+                </h1>
                 <h1 class="mt-8 text-2xl font-medium text-gray-900 dark:text-white">
                     {{ __('Elige tu jugada') }}
                 </h1>

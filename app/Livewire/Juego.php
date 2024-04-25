@@ -49,7 +49,7 @@ class Juego extends Component
     {
         $this->fsm = new FSM($this);
         $this->fsm
-            ->estadoInicial()
+            ->inicio()
             ->decisión('¿Existe oponente?')
             ->siguientes([
                 'buscando oponente',
@@ -67,6 +67,9 @@ class Juego extends Component
             ->fin();
         $this->estadoActual = session()->get('estadoActual', 'inicio');
         $this->remainingTime = session()->get('remainingTime', 0);
+        $this->ronda = session()->get('ronda', 0);
+        $this->puntajeJugador = session()->get('puntajeJugador', 0);
+        $this->puntajeOponente = session()->get('puntajeOponente', 0);
         $this->fsm->setEstadoActual($this->estadoActual, $this->remainingTime);
     }
 
@@ -86,6 +89,9 @@ class Juego extends Component
         $this->puntajeOponente = 0;
         session()->put('estadoActual', 'inicio');
         session()->put('remainingTime', 0);
+        session()->put('ronda', 0);
+        session()->put('puntajeJugador', 0);
+        session()->put('puntajeOponente', 0);
     }
 
     #[On('choice-made')]
@@ -100,6 +106,9 @@ class Juego extends Component
         $this->registerTime();
         session()->put('estadoActual', $estado->getNombre());
         session()->put('remainingTime', $estado->getRestante());
+        session()->put('ronda', $this->ronda);
+        session()->put('puntajeJugador', $this->puntajeJugador);
+        session()->put('puntajeOponente', $this->puntajeOponente);
     }
 
     public function calcular()
