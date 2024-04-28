@@ -79,6 +79,9 @@
                 <h1 class="mt-8 text-2xl font-medium text-gray-900 dark:text-white">
                     {{ __('Puntaje oponente: ') }} {{ $puntajeOponente }}
                 </h1>
+                <h1 class="mt-8 text-2xl font-medium text-gray-900 dark:text-white">
+                    {{ $resultadoJuego }}
+                </h1>
             </div>
         @break
 
