@@ -100,8 +100,7 @@ class Juego extends Component
     public function calcular()
     {
         $this->oponent_choice = $this->juegoOponente();
-        $resultadoRonda = abs(fmod($this->choice - $this->oponent_choice, 3));
-        $this->log('J= ' . $this->choice . ' O= ' . $this->oponent_choice . ' R = ' . $resultadoRonda);
+        $resultadoRonda = $this->calcularResultadoPorAngulo($this->choice, $this->oponent_choice);
         $this->calcularPuntaje($resultadoRonda);
         $this->resultadoRonda = $this->obtenerMensajeRonda(
             $resultadoRonda,
@@ -109,6 +108,18 @@ class Juego extends Component
             $this->oponent_choice
         );
         $this->choice = self::NINGUNO;
+    }
+
+    public function calcularResultadoPorAngulo($opciónJugador, $opciónOponente)
+    {
+        $diferencia = $opciónJugador * 120 - $opciónOponente * 120;
+        if ($diferencia < 0) {
+            $diferencia += 360;
+        } elseif ($diferencia ==0) {
+            return self::EMPATA;
+        }
+        // si es par gana el jugador
+        return ($diferencia / 120) % 2 == 0 ? self::GANA : self::PIERDE;
     }
 
     private function juegoOponente(): int
