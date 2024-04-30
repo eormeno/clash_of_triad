@@ -2,8 +2,6 @@
 
 namespace App\Livewire;
 
-use App\FSM\FSM;
-use App\FSM\Estado;
 use App\FSM\StateMachine;
 use Livewire\Attributes\On;
 
@@ -17,11 +15,9 @@ class ClashOfTriad extends StateMachine
     private const PAPEL = 0;
     private const PIEDRA = 1;
     private const TIJERA = 2;
-    public float $interval;
     public int $ronda = 0;
     public int $puntajeJugador = 0;
     public int $puntajeOponente = 0;
-    public $estadoUI;
     public int $choice = self::NINGUNO;
     public int $oponent_choice = self::NINGUNO;
     public $resultadoRonda = '';
@@ -41,11 +37,11 @@ class ClashOfTriad extends StateMachine
             ->next('iterar ronda')->startIteration($this->ronda, self::RONDAS)
             ->__->next('mostrar número ronda')->setDuration(2000)
             ->__->next('pedir jugada')->waitFor(fn() => $this->checkChoiceMade())
-            ->__->next('calcular')->alEntrar(fn() => $this->calcular())
+            ->__->next('calcular')->onEntering(fn() => $this->calcular())
             ->__->next('mostrar resultado ronda')->setDuration(4000)
             ->next('fin iteración ronda')->endIteration('iterar ronda')
-            ->next('mostrar resultado juego')->alEntrar(fn() => $this->finalJuego())->setDuration(4000)
-            ->fin();
+            ->next('mostrar resultado juego')->onEntering(fn() => $this->finalJuego())->setDuration(4000)
+            ->finalState();
         $this->ronda = session()->get('ronda', 0);
         $this->puntajeJugador = session()->get('puntajeJugador', 0);
         $this->puntajeOponente = session()->get('puntajeOponente', 0);
@@ -72,15 +68,7 @@ class ClashOfTriad extends StateMachine
     #[On('choice-made')]
     public function updateState()
     {
-        $estado = $this->fsm->actualizar($this->getDeltaTime());
-        if ($estado->isVisible()) {
-            $this->estadoUI = $estado->getNombre();
-        }
-        $this->estadoActual = $estado->getNombre();
-        $this->remainingTime = $this->remainingSeconds($estado);
-        $this->registerTime();
-        session()->put('estadoActual', $estado->getNombre());
-        session()->put('remainingTime', $estado->getRestante());
+        parent::updateState();
         session()->put('ronda', $this->ronda);
         session()->put('puntajeJugador', $this->puntajeJugador);
         session()->put('puntajeOponente', $this->puntajeOponente);
@@ -154,14 +142,9 @@ class ClashOfTriad extends StateMachine
         $this->ronda++;
     }
 
-    private function remainingSeconds(Estado $estado): int
+    public function jugar(int $miElección)
     {
-        return ceil($estado->getRestante() / 1000);
-    }
-
-    public function play(int $choice)
-    {
-        $this->choice = $choice;
+        $this->choice = $miElección;
         $this->dispatch('choice-made');
     }
 
@@ -170,20 +153,8 @@ class ClashOfTriad extends StateMachine
         return $this->choice !== -1;
     }
 
-    private function getDeltaTime(): float
-    {
-        $currentTime = floor(microtime(true) * 1000);
-        $lastTime = session()->get('time');
-        return ($currentTime - $lastTime);
-    }
-
-    public function registerTime()
-    {
-        session()->put('time', floor(microtime(true) * 1000));
-    }
-
     public function render()
     {
-        return view('livewire.juego');
+        return view('livewire.clash-of-triad');
     }
 }

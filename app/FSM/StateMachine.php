@@ -6,21 +6,28 @@ use Livewire\Component;
 
 class StateMachine extends Component
 {
+    const SAVED_TIME_NAME = 'time';
+    const SAVED_CURRENT_STATE_NAME = 'currentState';
+    const SAVED_REMAINING_TIME_NAME = 'remainingTime';
     const INITIAL_STATE_NAME = 'inicio';
     const FINAL_STATE_NAME = 'fin';
     const MAXIMUM_DELTA_TIME = 10000; // ms
     const UPDATE_INTERVAL = 1000; // ms
     private $states = [];
     private State $currentState;
-    private string $estadoActual = self::INITIAL_STATE_NAME;
-    private string $remainingTime = '0';
+    public string $estadoActual = self::INITIAL_STATE_NAME;
+    public string $remainingTime = '0';
+    public string $estadoUI = '';
 
     public function boot()
     {
         $this->initialState();
         $this->finalState();
-        $this->estadoActual = session()->get('estadoActual', self::INITIAL_STATE_NAME);
-        $this->remainingTime = session()->get('remainingTime', 0);
+        $this->estadoActual = session()->get(
+            self::SAVED_CURRENT_STATE_NAME,
+            self::INITIAL_STATE_NAME
+        );
+        $this->remainingTime = session()->get(self::SAVED_REMAINING_TIME_NAME, 0);
         $this->setCurrentState($this->estadoActual, $this->remainingTime);
     }
 
@@ -34,9 +41,21 @@ class StateMachine extends Component
         $this->setCurrentState(self::INITIAL_STATE_NAME, 0);
         $this->estadoActual = self::INITIAL_STATE_NAME;
         $this->remainingTime = 0;
-        session()->put('estadoActual', $this->estadoActual);
-        session()->put('remainingTime', $this->remainingTime);
+        session()->put(self::SAVED_CURRENT_STATE_NAME, $this->estadoActual);
+        session()->put(self::SAVED_REMAINING_TIME_NAME, $this->remainingTime);
+    }
 
+    public function updateState()
+    {
+        $estado = $this->update($this->getDeltaTime());
+        if ($estado->isVisible()) {
+            $this->estadoUI = $estado->getName();
+        }
+        $this->estadoActual = $estado->getName();
+        $this->remainingTime = $this->remainingSeconds($estado);
+        $this->registerTime();
+        session()->put(self::SAVED_CURRENT_STATE_NAME, $estado->getName());
+        session()->put(self::SAVED_REMAINING_TIME_NAME, $estado->getRemaining());
     }
 
     public function setCurrentState(string $nombre, float $restante): void
@@ -99,6 +118,23 @@ class StateMachine extends Component
             $nuevoEstado->enter();
         }
         return $nuevoEstado;
+    }
+
+    private function remainingSeconds(State $state): int
+    {
+        return ceil($state->getRemaining() / 1000);
+    }
+
+    private function getDeltaTime(): float
+    {
+        $currentTime = floor(microtime(true) * 1000);
+        $lastTime = session()->get(self::SAVED_TIME_NAME);
+        return ($currentTime - $lastTime);
+    }
+
+    public function registerTime()
+    {
+        session()->put(self::SAVED_TIME_NAME, floor(microtime(true) * 1000));
     }
 
     public function log(string $message, string $level = 'info')

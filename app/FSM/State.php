@@ -62,7 +62,7 @@ class State
         return $decisión;
     }
 
-    public function end(): void
+    public function finalState(): void
     {
         $this->next('fin');
     }
