@@ -6,11 +6,15 @@
     dark:via-transparent
     border-b border-gray-200 dark:border-gray-800">
 
+    <h3 class="text-sm font-medium text-gray-900 dark:text-white">
+        {{ __('Ping: ') }} {{ $interval }}
+    </h3>
+
     <h1 class="mt-2 text-2xl font-medium text-gray-900 dark:text-white">
         {{ __('Jugador') }}: {{ $jugador }}
     </h1>
 
-    <div x-init="setInterval(() => { $wire.updateState(); }, 1000)">
+    <div x-init="setInterval(() => { $wire.updateState(); }, {{ $interval }})">
         <!--
         <h1 class="mt-8 text-2xl font-medium text-gray-900 dark:text-white">
             {{ __('Estado de juego') }} : {{ $current_state_name }} : {{ $current_state_remaining_time }}

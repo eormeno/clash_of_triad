@@ -15,6 +15,8 @@ class StateMachine extends Component
     const UPDATE_INTERVAL = 1000; // ms
     private $states = [];
     private State $current_state;
+    public int $interval = self::UPDATE_INTERVAL;
+    public int $delta_time = 0;
     public string $current_state_name = self::INITIAL_STATE_NAME;
     public string $current_state_remaining_time = '0';
     public string $ui_state = '';
@@ -29,11 +31,6 @@ class StateMachine extends Component
         );
         $this->current_state_remaining_time = session()->get(self::SAVED_REMAINING_TIME_NAME, 0);
         $this->setCurrentState($this->current_state_name, $this->current_state_remaining_time);
-    }
-
-    public function mount()
-    {
-        $this->interval = self::UPDATE_INTERVAL;
     }
 
     public function clear()
@@ -98,6 +95,9 @@ class StateMachine extends Component
         if ($deltaTime > self::MAXIMUM_DELTA_TIME) {
             return $this->current_state;
         }
+
+        $this->delta_time = $deltaTime;
+
         $estado = $this->current_state;
         // $this->log('$deltaTime = ' . $deltaTime . ' ms' . ' $estado = ' . $estado->getNombre());
         while ($deltaTime > self::UPDATE_INTERVAL) {
@@ -124,7 +124,15 @@ class StateMachine extends Component
     {
         $currentTime = floor(microtime(true) * 1000);
         $lastTime = session()->get(self::SAVED_TIME_NAME);
-        return ($currentTime - $lastTime);
+        $deltaTime = $currentTime - $lastTime;
+        if ($deltaTime <=1) {
+            // try to increase the interval to avoid too many updates
+            $this->interval+=5;
+        } else {
+            // try to decrease the interval to get more updates
+            $this->interval-=5;
+        }
+        return $deltaTime;
     }
 
     public function registerTime()
@@ -134,9 +142,9 @@ class StateMachine extends Component
 
     public function log(string $message, string $level = 'info')
     {
-        $this->dispatch('log', [
-            'obj' => $message,
-            'level' => $level //warn, error, debug, info, etc...
-        ]);
+        //$this->dispatch('log', [
+        //    'obj' => $message,
+        //    'level' => $level //warn, error, debug, info, etc...
+        //]);
     }
 }
