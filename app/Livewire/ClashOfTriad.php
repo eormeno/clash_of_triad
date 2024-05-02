@@ -18,8 +18,8 @@ class ClashOfTriad extends StateMachine
     public int $ronda = 0;
     public int $puntajeJugador = 0;
     public int $puntajeOponente = 0;
-    public int $choice = self::NINGUNO;
-    public int $oponent_choice = self::NINGUNO;
+    public int $juego_propio = self::NINGUNO;
+    public int $juego_oponente = self::NINGUNO;
     public $resultadoRonda = '';
     public string $resultadoJuego = '';
     public $jugador = '';
@@ -32,15 +32,15 @@ class ClashOfTriad extends StateMachine
                 'buscando oponente',
                 'oponente encontrado'
             ])
-            ->state('buscando oponente')->setDuration(10000)
-            ->next('oponente encontrado')->setDuration(2000)
+            ->state('buscando oponente')->setSeconds(10)
+            ->next('oponente encontrado')->setSeconds(2)
             ->next('iterar ronda')->startIteration($this->ronda, self::RONDAS)
-            ->__->next('mostrar número ronda')->setDuration(2000)
-            ->__->next('pedir jugada')->waitFor(fn() => $this->checkChoiceMade())
-            ->__->next('calcular')->onEntering(fn() => $this->calcular())
-            ->__->next('mostrar resultado ronda')->setDuration(4000)
+            ->__->next('mostrar número ronda')->setSeconds(2)
+            ->__->next('pedir jugada')->waitFor(fn() => $this->esperaJugada())
+            ->__->next('calcular')->onEntering(fn() => $this->calcularGanador())
+            ->__->next('mostrar resultado ronda')->setSeconds(2)
             ->next('fin iteración ronda')->endIteration('iterar ronda')
-            ->next('mostrar resultado juego')->onEntering(fn() => $this->finalJuego())->setDuration(4000)
+            ->next('mostrar resultado juego')->onEntering(fn() => $this->finalJuego())->setSeconds(4)
             ->finalState();
         $this->ronda = session()->get('ronda', 0);
         $this->puntajeJugador = session()->get('puntajeJugador', 0);
@@ -74,17 +74,20 @@ class ClashOfTriad extends StateMachine
         session()->put('puntajeOponente', $this->puntajeOponente);
     }
 
-    public function calcular()
+    public function calcularGanador()
     {
-        $this->oponent_choice = $this->juegoOponente();
-        $resultadoRonda = $this->calcularResultadoPorAngulo($this->choice, $this->oponent_choice);
+        $this->juego_oponente = $this->juegoOponente();
+        $resultadoRonda = $this->calcularResultadoPorAngulo(
+            $this->juego_propio,
+            $this->juego_oponente
+        );
         $this->calcularPuntaje($resultadoRonda);
         $this->resultadoRonda = $this->obtenerMensajeRonda(
             $resultadoRonda,
-            $this->choice,
-            $this->oponent_choice
+            $this->juego_propio,
+            $this->juego_oponente
         );
-        $this->choice = self::NINGUNO;
+        $this->juego_propio = self::NINGUNO;
     }
 
     public function calcularResultadoPorAngulo($opciónJugador, $opciónOponente)
@@ -92,7 +95,7 @@ class ClashOfTriad extends StateMachine
         $diferencia = $opciónJugador * 120 - $opciónOponente * 120;
         if ($diferencia < 0) {
             $diferencia += 360;
-        } elseif ($diferencia ==0) {
+        } elseif ($diferencia == 0) {
             return self::EMPATA;
         }
         // si es par gana el jugador
@@ -137,20 +140,15 @@ class ClashOfTriad extends StateMachine
         ]);
     }
 
-    public function incrementarRonda()
+    public function juegoPropio(int $miElección)
     {
-        $this->ronda++;
-    }
-
-    public function jugar(int $miElección)
-    {
-        $this->choice = $miElección;
+        $this->juego_propio = $miElección;
         $this->dispatch('choice-made');
     }
 
-    public function checkChoiceMade()
+    public function esperaJugada()
     {
-        return $this->choice !== -1;
+        return $this->juego_propio !== -1;
     }
 
     public function render()

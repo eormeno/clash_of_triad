@@ -52,7 +52,7 @@ class StateMachine extends Component
             $this->estadoUI = $estado->getName();
         }
         $this->estadoActual = $estado->getName();
-        $this->remainingTime = $this->remainingSeconds($estado);
+        $this->remainingTime = $estado->getRemainingSeconds();
         $this->registerTime();
         session()->put(self::SAVED_CURRENT_STATE_NAME, $estado->getName());
         session()->put(self::SAVED_REMAINING_TIME_NAME, $estado->getRemaining());
@@ -118,11 +118,6 @@ class StateMachine extends Component
             $nuevoEstado->enter();
         }
         return $nuevoEstado;
-    }
-
-    private function remainingSeconds(State $state): int
-    {
-        return ceil($state->getRemaining() / 1000);
     }
 
     private function getDeltaTime(): float

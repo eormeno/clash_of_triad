@@ -6,7 +6,7 @@ class State
 {
     private StateMachine $fsm;
     private string $name;
-    private float $duration = 0;
+    private float $duration_ms = 0;
     private bool $isStart = false;
     private bool $isEnd = false;
     private bool $isDecision = false;
@@ -44,7 +44,7 @@ class State
 
     public function isVisible(): bool
     {
-        return $this->isEnd || $this->isInteractive || $this->duration > 0;
+        return $this->isEnd || $this->isInteractive || $this->duration_ms > 0;
     }
 
     public function next(string $name): State
@@ -64,7 +64,7 @@ class State
 
     public function finalState(): void
     {
-        $this->next('fin');
+        $this->next(StateMachine::FINAL_STATE_NAME);
     }
 
     public function following(array $following): State
@@ -75,15 +75,15 @@ class State
         return $this;
     }
 
-    public function setDuration(float $duración): State
+    public function setSeconds(float $duración): State
     {
-        $this->duration = $duración;
+        $this->duration_ms = $duración * 1000;
         return $this;
     }
 
-    public function getDuration(): float
+    public function getSeconds(): float
     {
-        return $this->duration;
+        return $this->duration_ms / 1000;
     }
 
     public function waitFor(callable $durante): State
@@ -135,6 +135,11 @@ class State
     {
         $this->remaining = $remaining;
         return $this;
+    }
+
+    public function getRemainingSeconds(): int
+    {
+        return floor($this->remaining / 1000);
     }
 
     public function isEnd(): bool
@@ -189,10 +194,10 @@ class State
     {
         if ($this->isPseudo()) {
             $this->remaining = 0;
-            $this->duration = 0;
+            $this->duration_ms = 0;
             return;
         }
-        $this->remaining = $this->duration;
+        $this->remaining = $this->duration_ms;
         if ($this->onEntering) {
             call_user_func($this->onEntering);
         }
@@ -240,17 +245,6 @@ class State
 
                         return call_user_func($this->durante, $deltaTime); */
         }
-        if ($this->duration > 0) {
-            //$this->fsm->log('Duración: ' . $this->nombre . ' -> ' . $this->duración . ' -> ' . $deltaTime);
-            $this->remaining -= $deltaTime;
-            if ($this->remaining <= 0) {
-                return $this->nextStates[0];
-            }
-        }
-        // si es un estado de cálculo... (hay que mejorar esto)
-        if ($this->onEntering) {
-            return $this->nextStates[0];
-        }
 
         if ($this->isStartIteration) {
             if ($this->variable < $this->to) {
@@ -259,11 +253,18 @@ class State
             }
             return $this->iterationEnd->nextStates[0];
         }
+
         if ($this->isEndIteration) {
             return $this->iterationStart;
         }
+
+        if ($this->duration_ms >= 0) {
+            // $this->fsm->log('"' . $this->name . '" -> ' . $this->getRemainingSeconds() . ' -> ' . $deltaTime);
+            $this->remaining -= $deltaTime;
+            if ($this->remaining <= 0) {
+                return $this->nextStates[0];
+            }
+        }
         return $this;
     }
-
-
 }
