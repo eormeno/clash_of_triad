@@ -6,24 +6,23 @@
     dark:via-transparent
     border-b border-gray-200 dark:border-gray-800">
 
-    <!--
-    <h1 class="mt-8 text-2xl font-medium text-gray-900 dark:text-white">
+    <h1 class="mt-2 text-2xl font-medium text-gray-900 dark:text-white">
         {{ __('Jugador') }}: {{ $jugador }}
     </h1>
-    -->
+
     <div x-init="setInterval(() => { $wire.updateState(); }, 1000)">
         <!--
         <h1 class="mt-8 text-2xl font-medium text-gray-900 dark:text-white">
-            {{ __('Estado de juego') }} : {{ $estadoActual }} : {{ $remainingTime }}
+            {{ __('Estado de juego') }} : {{ $current_state_name }} : {{ $current_state_remaining_time }}
         </h1>
         -->
     </div>
 
-    @switch($estadoUI)
+    @switch($ui_state)
         @case('buscando oponente')
             <div class="mt-6 align-middle">
                 <h1 class="mt-8 text-2xl font-medium text-gray-900 dark:text-white">
-                    {{ __('Buscando oponente') }}: {{ $remainingTime }}
+                    {{ __('Buscando oponente') }}: {{ $current_state_remaining_time }}
                 </h1>
             </div>
         @break
@@ -43,10 +42,10 @@
                 </h1>
                 <!-- the player points and the opponent points -->
                 <h1 class="mt-8 text-2xl font-medium text-gray-900 dark:text-white">
-                    {{ __('Tu puntaje: ') }} {{ $puntajeJugador }}
+                    {{ __('Tu puntaje: ') }} {{ $puntaje_jugador }}
                 </h1>
                 <h1 class="mt-8 text-2xl font-medium text-gray-900 dark:text-white">
-                    {{ __('Puntaje oponente: ') }} {{ $puntajeOponente }}
+                    {{ __('Puntaje oponente: ') }} {{ $puntaje_oponente }}
                 </h1>
                 <h1 class="mt-8 text-2xl font-medium text-gray-900 dark:text-white">
                     {{ __('Elige tu jugada') }}
@@ -63,7 +62,7 @@
         @case('mostrar resultado ronda')
             <div class="mt-6 align middle">
                 <h1 class="mt-8 text-2xl font-medium text-gray-900 dark:text-white">
-                    {{ __('Resultado') }} : {{ $resultadoRonda }}
+                    {{ __('Resultado') }} : {{ $resultado_ronda }}
                 </h1>
             </div>
         @break
@@ -79,13 +78,13 @@
         @case('mostrar resultado juego')
             <div class="mt-6 align middle">
                 <h1 class="mt-8 text-2xl font-medium text-gray-900 dark:text-white">
-                    {{ __('Tu puntaje: ') }} {{ $puntajeJugador }}
+                    {{ __('Tu puntaje: ') }} {{ $puntaje_jugador }}
                 </h1>
                 <h1 class="mt-8 text-2xl font-medium text-gray-900 dark:text-white">
-                    {{ __('Puntaje oponente: ') }} {{ $puntajeOponente }}
+                    {{ __('Puntaje oponente: ') }} {{ $puntaje_oponente }}
                 </h1>
                 <h1 class="mt-8 text-2xl font-medium text-gray-900 dark:text-white">
-                    {{ $resultadoJuego }}
+                    {{ $resultado_juego }}
                 </h1>
             </div>
         @break

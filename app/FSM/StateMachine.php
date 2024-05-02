@@ -7,28 +7,28 @@ use Livewire\Component;
 class StateMachine extends Component
 {
     const SAVED_TIME_NAME = 'time';
-    const SAVED_CURRENT_STATE_NAME = 'currentState';
-    const SAVED_REMAINING_TIME_NAME = 'remainingTime';
+    const SAVED_CURRENT_STATE_NAME = 'current_state_name';
+    const SAVED_REMAINING_TIME_NAME = 'current_state_remaining_time';
     const INITIAL_STATE_NAME = 'inicio';
     const FINAL_STATE_NAME = 'fin';
     const MAXIMUM_DELTA_TIME = 10000; // ms
     const UPDATE_INTERVAL = 1000; // ms
     private $states = [];
-    private State $currentState;
-    public string $estadoActual = self::INITIAL_STATE_NAME;
-    public string $remainingTime = '0';
-    public string $estadoUI = '';
+    private State $current_state;
+    public string $current_state_name = self::INITIAL_STATE_NAME;
+    public string $current_state_remaining_time = '0';
+    public string $ui_state = '';
 
     public function boot()
     {
         $this->initialState();
         $this->finalState();
-        $this->estadoActual = session()->get(
+        $this->current_state_name = session()->get(
             self::SAVED_CURRENT_STATE_NAME,
             self::INITIAL_STATE_NAME
         );
-        $this->remainingTime = session()->get(self::SAVED_REMAINING_TIME_NAME, 0);
-        $this->setCurrentState($this->estadoActual, $this->remainingTime);
+        $this->current_state_remaining_time = session()->get(self::SAVED_REMAINING_TIME_NAME, 0);
+        $this->setCurrentState($this->current_state_name, $this->current_state_remaining_time);
     }
 
     public function mount()
@@ -39,20 +39,20 @@ class StateMachine extends Component
     public function clear()
     {
         $this->setCurrentState(self::INITIAL_STATE_NAME, 0);
-        $this->estadoActual = self::INITIAL_STATE_NAME;
-        $this->remainingTime = 0;
-        session()->put(self::SAVED_CURRENT_STATE_NAME, $this->estadoActual);
-        session()->put(self::SAVED_REMAINING_TIME_NAME, $this->remainingTime);
+        $this->current_state_name = self::INITIAL_STATE_NAME;
+        $this->current_state_remaining_time = 0;
+        session()->put(self::SAVED_CURRENT_STATE_NAME, $this->current_state_name);
+        session()->put(self::SAVED_REMAINING_TIME_NAME, $this->current_state_remaining_time);
     }
 
     public function updateState()
     {
         $estado = $this->update($this->getDeltaTime());
         if ($estado->isVisible()) {
-            $this->estadoUI = $estado->getName();
+            $this->ui_state = $estado->getName();
         }
-        $this->estadoActual = $estado->getName();
-        $this->remainingTime = $estado->getRemainingSeconds();
+        $this->current_state_name = $estado->getName();
+        $this->current_state_remaining_time = $estado->getRemainingSeconds();
         $this->registerTime();
         session()->put(self::SAVED_CURRENT_STATE_NAME, $estado->getName());
         session()->put(self::SAVED_REMAINING_TIME_NAME, $estado->getRemaining());
@@ -60,8 +60,8 @@ class StateMachine extends Component
 
     public function setCurrentState(string $nombre, float $restante): void
     {
-        $this->currentState = $this->state($nombre);
-        $this->currentState->setRemaining($restante);
+        $this->current_state = $this->state($nombre);
+        $this->current_state->setRemaining($restante);
     }
 
     public function initialState(): State
@@ -93,20 +93,20 @@ class StateMachine extends Component
         // si el intervalo es muy corto en relación a la velocidad de la red o de las capacidades
         // del servidor o del cliente.
         if ($deltaTime <= 1) {
-            return $this->currentState;
+            return $this->current_state;
         }
         if ($deltaTime > self::MAXIMUM_DELTA_TIME) {
-            return $this->currentState;
+            return $this->current_state;
         }
-        $estado = $this->currentState;
+        $estado = $this->current_state;
         // $this->log('$deltaTime = ' . $deltaTime . ' ms' . ' $estado = ' . $estado->getNombre());
         while ($deltaTime > self::UPDATE_INTERVAL) {
             $estado = $this->getNextState($estado, self::UPDATE_INTERVAL);
             $deltaTime -= self::UPDATE_INTERVAL;
         }
         $estado = $this->getNextState($estado, $deltaTime);
-        $this->currentState = $estado;
-        return $this->currentState;
+        $this->current_state = $estado;
+        return $this->current_state;
     }
 
     private function getNextState(State $estado, float $deltaTime): State

@@ -3,7 +3,6 @@
 namespace App\Livewire;
 
 use App\FSM\StateMachine;
-use Livewire\Attributes\On;
 
 class ClashOfTriad extends StateMachine
 {
@@ -11,17 +10,17 @@ class ClashOfTriad extends StateMachine
     private const EMPATA = 0;
     private const PIERDE = 1;
     private const GANA = 2;
-    private const NINGUNO = -1;
+    private const NINGUNO_AUN = -1;
     private const PAPEL = 0;
     private const PIEDRA = 1;
     private const TIJERA = 2;
     public int $ronda = 0;
-    public int $puntajeJugador = 0;
-    public int $puntajeOponente = 0;
-    public int $juego_propio = self::NINGUNO;
-    public int $juego_oponente = self::NINGUNO;
-    public $resultadoRonda = '';
-    public string $resultadoJuego = '';
+    public int $puntaje_jugador = 0;
+    public int $puntaje_oponente = 0;
+    public int $juego_propio = self::NINGUNO_AUN;
+    public int $juego_oponente = self::NINGUNO_AUN;
+    public $resultado_ronda = '';
+    public string $resultado_juego = '';
     public $jugador = '';
 
     public function boot()
@@ -43,8 +42,8 @@ class ClashOfTriad extends StateMachine
             ->next('mostrar resultado juego')->onEntering(fn() => $this->finalJuego())->setSeconds(4)
             ->finalState();
         $this->ronda = session()->get('ronda', 0);
-        $this->puntajeJugador = session()->get('puntajeJugador', 0);
-        $this->puntajeOponente = session()->get('puntajeOponente', 0);
+        $this->puntaje_jugador = session()->get('puntajeJugador', 0);
+        $this->puntaje_oponente = session()->get('puntajeOponente', 0);
         parent::boot();
     }
 
@@ -58,20 +57,19 @@ class ClashOfTriad extends StateMachine
     {
         parent::clear();
         $this->ronda = 0;
-        $this->puntajeJugador = 0;
-        $this->puntajeOponente = 0;
+        $this->puntaje_jugador = 0;
+        $this->puntaje_oponente = 0;
         session()->put('ronda', 0);
         session()->put('puntajeJugador', 0);
         session()->put('puntajeOponente', 0);
     }
 
-    #[On('choice-made')]
     public function updateState()
     {
         parent::updateState();
         session()->put('ronda', $this->ronda);
-        session()->put('puntajeJugador', $this->puntajeJugador);
-        session()->put('puntajeOponente', $this->puntajeOponente);
+        session()->put('puntajeJugador', $this->puntaje_jugador);
+        session()->put('puntajeOponente', $this->puntaje_oponente);
     }
 
     public function calcularGanador()
@@ -82,12 +80,12 @@ class ClashOfTriad extends StateMachine
             $this->juego_oponente
         );
         $this->calcularPuntaje($resultadoRonda);
-        $this->resultadoRonda = $this->obtenerMensajeRonda(
+        $this->resultado_ronda = $this->obtenerMensajeRonda(
             $resultadoRonda,
             $this->juego_propio,
             $this->juego_oponente
         );
-        $this->juego_propio = self::NINGUNO;
+        $this->juego_propio = self::NINGUNO_AUN;
     }
 
     public function calcularResultadoPorAngulo($opciónJugador, $opciónOponente)
@@ -102,6 +100,11 @@ class ClashOfTriad extends StateMachine
         return ($diferencia / 120) % 2 == 0 ? self::GANA : self::PIERDE;
     }
 
+    public function juegoPropio(int $miElección)
+    {
+        $this->juego_propio = $miElección;
+    }
+
     private function juegoOponente(): int
     {
         return rand(0, 2);
@@ -110,23 +113,23 @@ class ClashOfTriad extends StateMachine
     private function calcularPuntaje(int $resultadoRonda)
     {
         if ($resultadoRonda == self::EMPATA) {
-            $this->puntajeJugador++;
-            $this->puntajeOponente++;
+            $this->puntaje_jugador++;
+            $this->puntaje_oponente++;
         } elseif ($resultadoRonda == self::GANA) {
-            $this->puntajeJugador += 2;
+            $this->puntaje_jugador += 2;
         } else {
-            $this->puntajeOponente += 2;
+            $this->puntaje_oponente += 2;
         }
     }
 
     private function finalJuego()
     {
-        if ($this->puntajeJugador == $this->puntajeOponente) {
-            $this->resultadoJuego = __('juego.game_result.0');
-        } elseif ($this->puntajeJugador > $this->puntajeOponente) {
-            $this->resultadoJuego = __('juego.game_result.2');
+        if ($this->puntaje_jugador == $this->puntaje_oponente) {
+            $this->resultado_juego = __('juego.game_result.0');
+        } elseif ($this->puntaje_jugador > $this->puntaje_oponente) {
+            $this->resultado_juego = __('juego.game_result.2');
         } else {
-            $this->resultadoJuego = __('juego.game_result.1');
+            $this->resultado_juego = __('juego.game_result.1');
         }
     }
 
@@ -140,15 +143,9 @@ class ClashOfTriad extends StateMachine
         ]);
     }
 
-    public function juegoPropio(int $miElección)
-    {
-        $this->juego_propio = $miElección;
-        $this->dispatch('choice-made');
-    }
-
     public function esperaJugada()
     {
-        return $this->juego_propio !== -1;
+        return $this->juego_propio !== self::NINGUNO_AUN;
     }
 
     public function render()
