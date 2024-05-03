@@ -125,13 +125,6 @@ class StateMachine extends Component
         $currentTime = floor(microtime(true) * 1000);
         $lastTime = session()->get(self::SAVED_TIME_NAME);
         $deltaTime = $currentTime - $lastTime;
-        if ($deltaTime <=1) {
-            // try to increase the interval to avoid too many updates
-            $this->interval+=5;
-        } else {
-            // try to decrease the interval to get more updates
-            $this->interval-=5;
-        }
         return $deltaTime;
     }
 
