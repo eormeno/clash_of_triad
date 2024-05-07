@@ -11,7 +11,7 @@
                         </svg>
                     </span>
 
-                    <p class="ml-2 font-mono text-sm text-white">
+                    <p class="ml-2 font-mono text-xs text-white">
                         <span class="bg-green-900 text-white rounded-lg p-2">{{ $current_state_name }} {{ $current_state_remaining_time }}</span>
                         <span>{{ __('Ping: ') }} {{ $delta_time }}</span>
                         <span>{{ __('Player: ') }} {{ $player_name }}</span>
